@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company_name }} OKR Tree</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/app.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>🎯 {{ company_name }} OKR Tree</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary btn-sm" id="createObjBtn" data-bs-toggle="modal" data-bs-target="#objModal" onclick="prepareObjForm()">
+                    <span>➕</span> Create Objective
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" id="teamsBtn" data-bs-toggle="modal" data-bs-target="#teamModal">
+                    <span>👥</span> Teams
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" id="managersBtn" data-bs-toggle="modal" data-bs-target="#managerModal">
+                    <span>👤</span> Managers
+                </button>
+                <label class="mode-switch" title="Edit Mode">
+                    <input type="checkbox" id="editModeToggle">
+                    <span class="toggle"></span>
+                    <span class="mode-label">Editing</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <span class="text-secondary me-2">Filter:</span>
+            <select class="form-select form-select-sm" id="filterTeam" onchange="applyFilter(this)">
+                <option value="">-- All Teams --</option>
+            </select>
+            <select class="form-select form-select-sm" id="filterManager" onchange="applyFilter(this)">
+                <option value="">-- All Managers --</option>
+            </select>
+            <button class="btn btn-outline-secondary btn-sm" id="resetFilterBtn" style="display:none;" onclick="resetFilter()">✕ Reset</button>
+            <div class="btn-group btn-group-sm ms-auto" id="viewModeGroup" role="group">
+                <button type="button" class="btn btn-outline-secondary active" data-mode="hierarchy" title="Hierarchical List">🔽 Hierarchy</button>
+                <button type="button" class="btn btn-outline-secondary" data-mode="tree" title="Tree View">🌳 Tree</button>
+            </div>
+        </div>
+
+        <div class="tree-panel" id="treePanel">
+            <button class="fullscreen-btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
+            <div id="tree"></div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="teamModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Manage Teams</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="teamForm" class="mb-3" onsubmit="event.preventDefault();">
+                        <input type="text" class="form-control mb-2" id="teamName" placeholder="Team name" required>
+                        <button type="submit" class="btn btn-primary btn-sm">Add</button>
+                    </form>
+                    <ul class="list-group" id="teamList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="managerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Manage Managers</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="managerForm" class="mb-3" onsubmit="event.preventDefault();">
+                        <input type="text" class="form-control mb-2" id="managerName" placeholder="Manager name" required>
+                        <button type="submit" class="btn btn-primary btn-sm">Add</button>
+                    </form>
+                    <ul class="list-group" id="managerList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="objModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title" id="objModalLabel">Create Objective</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="objForm">
+                        <input type="hidden" id="objId">
+                        <div class="mb-3">
+                            <label class="form-label">Objective Name</label>
+                            <input type="text" class="form-control" id="objName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Parent Objective</label>
+                            <select class="form-select" id="objParent"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Team</label>
+                            <select class="form-select" id="objTeam"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Manager</label>
+                            <select class="form-select" id="objManager"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Doc Link</label>
+                            <input type="url" class="form-control" id="objDocLink" placeholder="https://...">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Result form -->
+    <div class="modal fade" id="krModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Key Result</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="krForm">
+                        <input type="hidden" id="krId">
+                        <input type="hidden" id="krObjectiveId">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" id="krName" required>
+                        </div>
+                        <div class="row mb-3 kr-value-group">
+                            <div class="col-4">
+                                <label class="form-label">Initial Value</label>
+                                <input type="number" step="any" class="form-control" id="krInitial" value="0">
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label">Current Value</label>
+                                <input type="number" step="any" class="form-control" id="krCurrent" value="0">
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label">Target Value</label>
+                                <input type="number" step="any" class="form-control" id="krTarget" value="0">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-4">
+                                <label class="form-label">Unit</label>
+                                <input type="text" class="form-control" id="krUnit" placeholder="%, pcs">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/state.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/forms.js"></script>
+    <script src="/static/js/references.js"></script>
+    <script src="/static/js/renderers.js"></script>
+    <script src="/static/js/refresh.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
