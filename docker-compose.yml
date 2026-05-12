@@ -4,6 +4,7 @@ services:
     environment:
       - OKR_DB_PATH=/data/okr.db
       - COMPANY_NAME=${COMPANY_NAME:-Company}
+      - APP_HOST=${APP_HOST:-http://localhost:5000}
       - TZ=${TZ:-Etc/UTC}
     volumes:
       - ./data:/data
