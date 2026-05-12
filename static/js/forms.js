@@ -48,7 +48,8 @@ async function addKR(objectiveId) {
     document.getElementById('krTarget').value = 0;
     document.getElementById('krUnit').value = '';
     document.getElementById('krCurlSnippet').textContent = '';
-    document.getElementById('krApiWarning').classList.add('d-none');
+    const addWarning = document.getElementById('krApiWarning');
+    if (addWarning) addWarning.classList.add('d-none');
     new bootstrap.Modal(document.getElementById('krModal')).show();
 }
 
@@ -76,18 +77,20 @@ async function editKR(krId) {
     document.getElementById('krUnit').value = found.unit || '';
 
     const apiWarning = document.getElementById('krApiWarning');
-    if (found.source === 'api' && found.last_updated) {
-        const updated = new Date(found.last_updated.replace(' ', 'T') + 'Z');
-        const now = new Date();
-        const hoursAgo = (now - updated) / (1000 * 60 * 60);
-        if (hoursAgo < 24) {
-            apiWarning.classList.remove('d-none');
-            apiWarning.title = 'Last API update: ' + found.last_updated;
+    if (apiWarning) {
+        if (found.source === 'api' && found.last_updated) {
+            const updated = new Date(found.last_updated.replace(' ', 'T') + 'Z');
+            const now = new Date();
+            const hoursAgo = (now - updated) / (1000 * 60 * 60);
+            if (hoursAgo < 24) {
+                apiWarning.classList.remove('d-none');
+                apiWarning.title = 'Last API update: ' + found.last_updated;
+            } else {
+                apiWarning.classList.add('d-none');
+            }
         } else {
             apiWarning.classList.add('d-none');
         }
-    } else {
-        apiWarning.classList.add('d-none');
     }
 
     const curl = `curl -X PUT \\
