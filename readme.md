@@ -142,11 +142,24 @@ Three roles are supported:
 
 ## Updating KR via External API
 
+All API endpoints require authentication. Use a dedicated service account (role `edit`) for automation:
+
 ```bash
-curl -X PUT http://localhost:5000/api/keyresults/<kr_id> \
+# Log in and save session cookie
+curl -c /tmp/okr-cookies.txt \
+  -X POST \
+  -d 'email=robot@company.com&password=your-password' \
+  http://localhost:5000/login
+
+# Update Key Result value
+curl -b /tmp/okr-cookies.txt \
+  -X PUT \
   -H 'Content-Type: application/json' \
-  -d '{"current_value": 42, "source": "api"}'
+  -d '{"current_value": 42, "source": "api"}' \
+  http://localhost:5000/api/keyresults/<kr_id>
 ```
+
+To create a robot user, log in as admin → Users → Add User with role `edit`.
 
 ## Features
 
