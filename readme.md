@@ -63,9 +63,21 @@ Data is persisted in `./data/okr.db` (bind mount at `/data`).
 |----------|---------------|-------------|
 | `OKR_DB_PATH` | `data/okr.db` | SQLite database path |
 | `COMPANY_NAME` | `Company`     | Company name displayed in the UI title and heading |
+| `APP_HOST` | `http://localhost:5000` | Public URL of the application (used in generated curl snippets) |
 | `SECRET_KEY` | auto-generated | Flask session signing key (set for production) |
+| `TZ` | `Etc/UTC` | Container timezone (e.g. `Europe/Moscow`, `America/New_York`) |
 
-Set `COMPANY_NAME=YourCompany` to customize the branding.
+### Usage examples
+
+```bash
+# Run with custom branding and timezone
+COMPANY_NAME=MyCorp TZ=Europe/Moscow docker compose up -d
+
+# Or via .env file
+# echo "COMPANY_NAME=MyCorp" >> .env
+# echo "TZ=Europe/Moscow" >> .env
+# docker compose up -d
+```
 
 ## First-Run Setup
 
@@ -119,6 +131,11 @@ Three roles are supported:
 | DELETE | `/api/managers/<id>` | Delete manager |
 
 ### Authentication
+
+All API endpoints support two authentication methods:
+- **Cookie** – browser-based, uses Flask-Login session
+- **Bearer token** – for automation, pass via `Authorization: Bearer <token>` header
+
 | Method | Path | Action | Access |
 |--------|------|--------|--------|
 | GET | `/login` | Login page | Public |
@@ -127,12 +144,14 @@ Three roles are supported:
 | GET | `/setup` | First-run admin setup page | No users exist |
 | POST | `/setup` | Create initial admin | No users exist |
 
+Every user has an auto-generated API token visible in the user management panel (admin only). Tokens can be regenerated at any time — the old token stops working immediately.
+
 ### Users (admin only)
 | Method | Path | Action |
 |--------|------|--------|
-| GET | `/api/users` | List all users |
-| POST | `/api/users` | Create user |
-| PUT | `/api/users/<id>` | Update user password/role |
+| GET | `/api/users` | List all users (includes `api_token`, `api_token_generated_at`) |
+| POST | `/api/users` | Create user (auto-generates API token) |
+| PUT | `/api/users/<id>` | Update user password/role, or pass `{"regenerate_token": true}` to issue a new API token |
 | DELETE | `/api/users/<id>` | Delete user |
 
 ### Profile
@@ -142,24 +161,18 @@ Three roles are supported:
 
 ## Updating KR via External API
 
-All API endpoints require authentication. Use a dedicated service account (role `edit`) for automation:
+All API endpoints support authentication via Bearer token. Use a dedicated service account (role `edit`) for automation — no session cookies needed:
 
 ```bash
-# Log in and save session cookie
-curl -c /tmp/okr-cookies.txt \
-  -X POST \
-  -d 'email=robot@company.com&password=your-password' \
-  http://localhost:5000/login
-
-# Update Key Result value
-curl -b /tmp/okr-cookies.txt \
-  -X PUT \
+# Update Key Result value using API token
+curl -X PUT \
+  -H 'Authorization: Bearer <api_token>' \
   -H 'Content-Type: application/json' \
   -d '{"current_value": 42, "source": "api"}' \
   http://localhost:5000/api/keyresults/<kr_id>
 ```
 
-To create a robot user, log in as admin → Users → Add User with role `edit`.
+To get an API token, log in as admin → Users → click 🔄 on the robot user to generate/regenerate a token, then click the truncated token to copy it. Create a robot user with role `edit` via the Add User form in the same panel.
 
 ## Features
 

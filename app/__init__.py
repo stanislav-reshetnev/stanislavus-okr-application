@@ -33,6 +33,16 @@ def create_app():
         user = User.get_by_id(db, user_id)
         return user
 
+    @login_manager.request_loader
+    def load_user_from_request(request):
+        from app.models.user import User
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            token = auth_header[7:]
+            db = get_db()
+            return User.get_by_api_token(db, token)
+        return None
+
     @app.before_request
     def check_setup():
         if request.path.startswith('/static/'):

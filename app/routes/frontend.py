@@ -9,4 +9,5 @@ frontend_bp = Blueprint('frontend', __name__)
 def index():
     return render_template('index.html',
                            company_name=current_app.config.get('COMPANY_NAME', 'Company'),
+                           app_host=current_app.config.get('APP_HOST', 'http://localhost:5000'),
                            current_user=current_user)

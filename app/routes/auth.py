@@ -106,8 +106,10 @@ def api_update_user(user_id):
         user.update_password(db, data['password'])
     if 'role' in data and data['role'] in ('view', 'edit', 'admin'):
         User.update_role(db, user_id, data['role'])
+    if data.get('regenerate_token'):
+        user.generate_api_token(db)
 
-    return jsonify({"status": "updated"})
+    return jsonify(user.to_dict())
 
 
 @auth_bp.route('/api/users/<user_id>', methods=['DELETE'])

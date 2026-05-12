@@ -47,6 +47,8 @@ async function addKR(objectiveId) {
     document.getElementById('krCurrent').value = 0;
     document.getElementById('krTarget').value = 0;
     document.getElementById('krUnit').value = '';
+    document.getElementById('krCurlSnippet').textContent = '';
+    document.getElementById('krApiWarning').classList.add('d-none');
     new bootstrap.Modal(document.getElementById('krModal')).show();
 }
 
@@ -72,7 +74,41 @@ async function editKR(krId) {
     document.getElementById('krCurrent').value = found.current_value;
     document.getElementById('krTarget').value = found.target_value;
     document.getElementById('krUnit').value = found.unit || '';
+
+    const apiWarning = document.getElementById('krApiWarning');
+    if (found.source === 'api' && found.last_updated) {
+        const updated = new Date(found.last_updated.replace(' ', 'T') + 'Z');
+        const now = new Date();
+        const hoursAgo = (now - updated) / (1000 * 60 * 60);
+        if (hoursAgo < 24) {
+            apiWarning.classList.remove('d-none');
+            apiWarning.title = 'Last API update: ' + found.last_updated;
+        } else {
+            apiWarning.classList.add('d-none');
+        }
+    } else {
+        apiWarning.classList.add('d-none');
+    }
+
+    const curl = `curl -X PUT \\
+  -H 'Authorization: Bearer <API_TOKEN>' \\
+  -H 'Content-Type: application/json' \\
+  -d '{"current_value": <VALUE>, "source": "api"}' \\
+  ${appHost}/api/keyresults/${found.id}`;
+    document.getElementById('krCurlSnippet').textContent = curl;
+
     new bootstrap.Modal(document.getElementById('krModal')).show();
+}
+
+function copyCurlCode() {
+    const el = document.getElementById('krCurlSnippet');
+    const text = el.textContent;
+    if (!text || text === '—') return;
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Curl code copied to clipboard');
+    }).catch(() => {
+        prompt('Copy this code manually:', text);
+    });
 }
 
 async function deleteKR(krId) {

@@ -162,6 +162,17 @@
                                 <input type="text" class="form-control" id="krUnit" placeholder="%, pcs">
                             </div>
                         </div>
+                        <div id="krApiWarning" class="alert alert-warning py-2 mb-2 d-none" role="alert">
+                            ⚠ Warning: This value is automatically updated via external API
+                        </div>
+                        <button type="button" class="btn btn-outline-secondary btn-sm w-100 mb-2" data-bs-toggle="collapse" data-bs-target="#krCurlCode" aria-expanded="false">
+                            Curl code for external updates ▾
+                        </button>
+                        <div class="collapse" id="krCurlCode">
+                            <pre id="krCurlSnippet"
+                                 style="cursor:pointer;background:#f8f9fa;padding:8px;border-radius:4px;font-size:12px;white-space:pre-wrap;word-break:break-all;"
+                                 onclick="copyCurlCode()" title="Click to copy">—</pre>
+                        </div>
                         <button type="submit" class="btn btn-primary">Save</button>
                     </form>
                 </div>
@@ -216,7 +227,8 @@
         </div>
     </div>
 
-    <script>const currentUser = {email: '{{ current_user.email }}', role: '{{ current_user.role }}'};</script>
+    <script>const currentUser = {email: '{{ current_user.email }}', role: '{{ current_user.role }}', api_token: '{{ current_user.api_token }}'};</script>
+    <script>const appHost = '{{ app_host }}';</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/state.js"></script>
     <script src="/static/js/api.js"></script>

@@ -6,6 +6,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 class Config:
     COMPANY_NAME = os.environ.get('COMPANY_NAME', 'Company')
+    APP_HOST = os.environ.get('APP_HOST', 'http://localhost:5000')
     SECRET_KEY = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
     @classmethod
@@ -14,6 +15,7 @@ class Config:
 
     @classmethod
     def init_app(cls, app):
+        app.config['APP_HOST'] = cls.APP_HOST
         if not os.environ.get('SECRET_KEY'):
             key_file = os.path.join(os.path.dirname(cls.get_database_path()), '.secret_key')
             if os.path.exists(key_file):

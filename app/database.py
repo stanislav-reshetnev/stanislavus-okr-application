@@ -57,7 +57,9 @@ def init_db(app):
                 password_hash TEXT NOT NULL,
                 role TEXT NOT NULL DEFAULT 'view',
                 registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_login_at TIMESTAMP
+                last_login_at TIMESTAMP,
+                api_token TEXT DEFAULT NULL,
+                api_token_generated_at TIMESTAMP DEFAULT NULL
             );
         ''')
         try:
@@ -70,6 +72,14 @@ def init_db(app):
             pass
         try:
             db.execute('ALTER TABLE objectives ADD COLUMN doc_link TEXT DEFAULT ""')
+        except sqlite3.OperationalError:
+            pass
+        try:
+            db.execute('ALTER TABLE users ADD COLUMN api_token TEXT DEFAULT NULL')
+        except sqlite3.OperationalError:
+            pass
+        try:
+            db.execute('ALTER TABLE users ADD COLUMN api_token_generated_at TIMESTAMP DEFAULT NULL')
         except sqlite3.OperationalError:
             pass
         try:

@@ -1,3 +1,4 @@
+import secrets
 import uuid
 from datetime import datetime
 
@@ -13,6 +14,8 @@ class User(UserMixin):
         self.role = row['role']
         self.registered_at = row['registered_at']
         self.last_login_at = row['last_login_at']
+        self.api_token = row['api_token']
+        self.api_token_generated_at = row['api_token_generated_at']
 
     @staticmethod
     def get_by_id(db, user_id):
@@ -25,6 +28,11 @@ class User(UserMixin):
         return User(row) if row else None
 
     @staticmethod
+    def get_by_api_token(db, token):
+        row = db.execute('SELECT * FROM users WHERE api_token = ?', (token,)).fetchone()
+        return User(row) if row else None
+
+    @staticmethod
     def create(db, email, password, role='view'):
         user_id = str(uuid.uuid4())
         password_hash = generate_password_hash(password)
@@ -34,7 +42,18 @@ class User(UserMixin):
             (user_id, email, password_hash, role, now)
         )
         db.commit()
-        return User.get_by_id(db, user_id)
+        user = User.get_by_id(db, user_id)
+        user.generate_api_token(db)
+        return user
+
+    def generate_api_token(self, db):
+        self.api_token = secrets.token_urlsafe(32)
+        self.api_token_generated_at = datetime.utcnow().isoformat()
+        db.execute(
+            'UPDATE users SET api_token = ?, api_token_generated_at = ? WHERE id = ?',
+            (self.api_token, self.api_token_generated_at, self.id)
+        )
+        db.commit()
 
     def update_password(self, db, new_password):
         self.password_hash = generate_password_hash(new_password)
@@ -73,4 +92,6 @@ class User(UserMixin):
             'role': self.role,
             'registered_at': self.registered_at,
             'last_login_at': self.last_login_at,
+            'api_token': self.api_token,
+            'api_token_generated_at': self.api_token_generated_at,
         }
