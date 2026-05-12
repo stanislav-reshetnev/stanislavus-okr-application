@@ -8,7 +8,7 @@ from app.config import Config
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(Config.DATABASE)
+        db = g._database = sqlite3.connect(Config.get_database_path())
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys = ON")
     return db
@@ -50,6 +50,14 @@ def init_db(app):
                 current_value REAL DEFAULT 0,
                 unit TEXT DEFAULT '',
                 FOREIGN KEY (objective_id) REFERENCES objectives(id) ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS users (
+                id TEXT PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                role TEXT NOT NULL DEFAULT 'view',
+                registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_login_at TIMESTAMP
             );
         ''')
         try:

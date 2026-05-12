@@ -21,11 +21,24 @@
                 <button class="btn btn-outline-secondary btn-sm" id="managersBtn" data-bs-toggle="modal" data-bs-target="#managerModal">
                     <span>👤</span> Managers
                 </button>
+                <button class="btn btn-outline-secondary btn-sm d-none" id="usersBtn" data-bs-toggle="modal" data-bs-target="#userModal">
+                    <span>🔐</span> Users
+                </button>
                 <label class="mode-switch" title="Edit Mode">
                     <input type="checkbox" id="editModeToggle">
                     <span class="toggle"></span>
                     <span class="mode-label">Editing</span>
                 </label>
+                <div class="dropdown" id="profileDropdown">
+                    <button class="btn btn-sm btn-outline-secondary" id="profileBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Profile">
+                        👤
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#" onclick="showProfileModal()">✎ Edit Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/logout">🚪 Sign Out</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
 
@@ -156,11 +169,60 @@
         </div>
     </div>
 
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Manage Users</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="userForm" class="mb-3" onsubmit="event.preventDefault();">
+                        <input type="email" class="form-control mb-2" id="userEmail" placeholder="Email" required>
+                        <input type="password" class="form-control mb-2" id="userPassword" placeholder="Password" required>
+                        <select class="form-select mb-2" id="userRole">
+                            <option value="view">View</option>
+                            <option value="edit">Edit</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm">Add User</button>
+                    </form>
+                    <ul class="list-group" id="userList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="profileModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Edit Profile</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <p class="mb-3"><strong>Email:</strong> <span id="profileEmail"></span></p>
+                    <form id="profileForm">
+                        <div class="mb-3">
+                            <label class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="profileCurrentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="profileNewPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="profileConfirmPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Change Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>const currentUser = {email: '{{ current_user.email }}', role: '{{ current_user.role }}'};</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/state.js"></script>
     <script src="/static/js/api.js"></script>
     <script src="/static/js/forms.js"></script>
     <script src="/static/js/references.js"></script>
+    <script src="/static/js/users.js"></script>
     <script src="/static/js/renderers.js"></script>
     <script src="/static/js/refresh.js"></script>
     <script src="/static/js/app.js"></script>

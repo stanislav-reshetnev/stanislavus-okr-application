@@ -37,14 +37,68 @@ document.getElementById('krForm').addEventListener('submit', async (e) => {
     refreshTree();
 });
 
+document.getElementById('userForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('userEmail').value;
+    const password = document.getElementById('userPassword').value;
+    const role = document.getElementById('userRole').value;
+    const resp = await fetch('/api/users', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password, role})
+    });
+    if (resp.ok) {
+        document.getElementById('userEmail').value = '';
+        document.getElementById('userPassword').value = '';
+        document.getElementById('userRole').value = 'view';
+        refreshUserList();
+    } else {
+        const err = await resp.json();
+        alert('Error: ' + (err.error || 'Failed to add user'));
+    }
+});
+
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const current_password = document.getElementById('profileCurrentPassword').value;
+    const new_password = document.getElementById('profileNewPassword').value;
+    const confirm = document.getElementById('profileConfirmPassword').value;
+
+    if (new_password !== confirm) {
+        alert('New passwords do not match.');
+        return;
+    }
+
+    const resp = await fetch('/api/profile/password', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({current_password, new_password})
+    });
+    if (resp.ok) {
+        alert('Password changed successfully.');
+        bootstrap.Modal.getInstance(document.getElementById('profileModal')).hide();
+    } else {
+        const err = await resp.json();
+        alert('Error: ' + (err.error || 'Failed to change password'));
+    }
+});
+
 window.addEventListener('DOMContentLoaded', async () => {
     editMode = false;
     editModeToggle.checked = false;
     createObjBtn.classList.add('d-none');
     teamsBtn.classList.add('d-none');
     managersBtn.classList.add('d-none');
+    usersBtn.classList.add('d-none');
     viewModeGroup.classList.remove('d-none');
     body.classList.remove('edit-mode');
+
+    if (currentUser.role === 'view') {
+        editModeToggle.closest('.mode-switch').style.display = 'none';
+    }
+    if (currentUser.role === 'admin') {
+        usersBtn.classList.remove('d-none');
+    }
 
     await populateFilters();
     await refreshTree();
@@ -113,4 +167,12 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('teamModal').addEventListener('show.bs.modal', refreshTeamList);
     document.getElementById('managerModal').addEventListener('show.bs.modal', refreshManagerList);
+    document.getElementById('userModal').addEventListener('show.bs.modal', refreshUserList);
+
+    document.querySelectorAll('.dropdown-menu .dropdown-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('profileBtn'));
+            if (dropdown) dropdown.hide();
+        });
+    });
 });

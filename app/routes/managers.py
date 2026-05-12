@@ -1,21 +1,24 @@
 from flask import Blueprint, request, jsonify
+from flask_login import login_required
 
-from app.config import Config
 from app.database import get_db
 from app.models import manager as manager_model
+from app.auth_utils import role_required
 
 managers_bp = Blueprint('managers', __name__)
 
 
 @managers_bp.route('/api/managers', methods=['GET'])
+@login_required
 def get_managers():
     db = get_db()
     managers = manager_model.get_all(db)
-    print(f"[DEBUG] Managers: {len(managers)} rows, DB file: {Config.DATABASE}", flush=True)
     return jsonify(managers)
 
 
 @managers_bp.route('/api/managers', methods=['POST'])
+@login_required
+@role_required('edit', 'admin')
 def create_manager():
     data = request.json
     if not data or 'name' not in data:
@@ -29,6 +32,8 @@ def create_manager():
 
 
 @managers_bp.route('/api/managers/<manager_id>', methods=['PUT'])
+@login_required
+@role_required('edit', 'admin')
 def update_manager(manager_id):
     db = get_db()
     data = request.json
@@ -41,6 +46,8 @@ def update_manager(manager_id):
 
 
 @managers_bp.route('/api/managers/<manager_id>', methods=['DELETE'])
+@login_required
+@role_required('edit', 'admin')
 def delete_manager(manager_id):
     db = get_db()
     manager_model.delete(db, manager_id)
