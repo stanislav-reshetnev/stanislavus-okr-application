@@ -107,11 +107,15 @@ function copyCurlCode() {
     const el = document.getElementById('krCurlSnippet');
     const text = el.textContent;
     if (!text || text === '—') return;
-    navigator.clipboard.writeText(text).then(() => {
-        alert('Curl code copied to clipboard');
-    }).catch(() => {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Curl code copied to clipboard');
+        }).catch(() => {
+            prompt('Copy this code manually:', text);
+        });
+    } else {
         prompt('Copy this code manually:', text);
-    });
+    }
 }
 
 async function deleteKR(krId) {
