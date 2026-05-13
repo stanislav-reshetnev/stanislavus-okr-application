@@ -125,6 +125,23 @@ body {
     box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
 }
 
+.search-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.search-group #searchInput {
+    width: 200px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-size: 0.85rem;
+}
+.search-group #searchInput:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+
 .btn {
     font-weight: 500;
     border-radius: var(--radius-sm);

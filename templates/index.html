@@ -52,6 +52,10 @@
                 <option value="">-- All Managers --</option>
             </select>
             <button class="btn btn-outline-secondary btn-sm" id="resetFilterBtn" style="display:none;" onclick="resetFilter()">✕ Reset</button>
+            <div class="search-group">
+                <button class="btn btn-outline-secondary btn-sm" id="searchToggleBtn" title="Search by query in titles">🔍</button>
+                <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Search objectives and KRs..." style="display:none">
+            </div>
             <div class="btn-group btn-group-sm ms-auto" id="viewModeGroup" role="group">
                 <button type="button" class="btn btn-outline-secondary active" data-mode="hierarchy" title="Hierarchical List">🔽 Hierarchy</button>
                 <button type="button" class="btn btn-outline-secondary" data-mode="tree" title="Tree View">🌳 Tree</button>

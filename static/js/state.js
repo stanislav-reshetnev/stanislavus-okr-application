@@ -1,5 +1,6 @@
 let selectedTeamId = '';
 let selectedManagerId = '';
+let searchQuery = '';
 let editMode = false;
 let viewMode = 'hierarchy';
 let objectivesMap = {};

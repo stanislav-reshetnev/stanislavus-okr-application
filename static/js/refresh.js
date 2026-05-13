@@ -30,6 +30,8 @@ function resetFilter() {
     selectedTeamId = '';
     selectedManagerId = '';
     document.getElementById('resetFilterBtn').style.display = 'none';
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) { searchInput.value = ''; searchQuery = ''; }
     refreshTree();
 }
 
@@ -58,12 +60,30 @@ function setupRootDropZone() {
     });
 }
 
+function filterTree(nodes, query) {
+    if (!query) return nodes;
+    const q = query.toLowerCase();
+    return nodes.reduce((acc, node) => {
+        const nameMatch = node.name.toLowerCase().includes(q);
+        const filteredKRs = nameMatch || !node.keyresults
+            ? node.keyresults
+            : node.keyresults.filter(kr => kr.name.toLowerCase().includes(q));
+        const krMatch = !nameMatch && filteredKRs && filteredKRs.length > 0;
+        const filteredChildren = node.children ? filterTree(node.children, q) : [];
+        if (nameMatch || krMatch || filteredChildren.length > 0) {
+            acc.push({ ...node, keyresults: filteredKRs, children: filteredChildren });
+        }
+        return acc;
+    }, []);
+}
+
 async function refreshTree() {
     const treeContainer = document.getElementById('tree');
     treeContainer.innerHTML = '';
     objectivesMap = {};
     const data = await loadTree(selectedTeamId, selectedManagerId);
     collectObjectives(data);
+    const filtered = filterTree(data, searchQuery);
 
     const treePanel = document.getElementById('treePanel');
     if (viewMode === 'tree') {
@@ -82,7 +102,7 @@ async function refreshTree() {
             graphResizeHandler = null;
         }
         graphCurrentRoots = null;
-        renderTree(data, treeContainer, true);
+        renderTree(filtered, treeContainer, true);
         document.querySelectorAll('.caret').forEach(caret => {
             caret.addEventListener('click', function() {
                 this.classList.toggle('caret-down');
@@ -94,6 +114,26 @@ async function refreshTree() {
             });
         });
     } else if (viewMode === 'tree') {
-        renderTreeGraphic(data, treeContainer);
+        renderTreeGraphic(filtered, treeContainer);
+    }
+}
+
+function initSearch() {
+    const toggleBtn = document.getElementById('searchToggleBtn');
+    const input = document.getElementById('searchInput');
+    if (!toggleBtn || !input) return;
+
+    toggleBtn.addEventListener('click', () => {
+        const hidden = input.style.display === 'none';
+        input.style.display = hidden ? '' : 'none';
+        if (hidden) input.focus();
+        else { input.value = ''; doSearch(''); }
+    });
+
+    input.addEventListener('input', () => doSearch(input.value));
+
+    function doSearch(q) {
+        searchQuery = q.trim();
+        refreshTree();
     }
 }
