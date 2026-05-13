@@ -4,6 +4,37 @@ An OKR (Objectives and Key Results) management application with a hierarchical t
 
 Built with Flask + SQLite + Bootstrap 5, served via Docker Compose (gunicorn + nginx). Features user authentication with role-based access control.
 
+## Features
+
+### 📋 Hierarchical View
+Explore your OKR tree in a familiar nested list. Expand/collapse key results, track progress with color-coded bars, see team assignments and responsible managers at a glance.
+
+<video src="screens/01_OKR_view_hierarchy.webm" controls width="100%"></video>
+
+### 🔍 Filtering & Search
+Quickly narrow down objectives by team or manager. Use the real-time text search to find specific objectives or key results across the entire tree.
+
+<video src="screens/02_OKR_view_hierarchy_filtering.webm" controls width="100%"></video>
+
+### 🕸️ Interactive Graph Mode
+Switch to a visual tree view with SVG connection lines that reveal the parent-child relationships between objectives. Pan the canvas by dragging with your mouse.
+
+<video src="screens/03_OKR_view_tree.webm" controls width="100%"></video>
+
+### ✏️ Edit Mode
+Enable edit mode to create, edit, reorder, and delete objectives and key results. Drag-and-drop to restructure the tree. Manage teams and managers in dedicated reference panels.
+
+<video src="screens/04_OKR_edit_tree.webm" controls width="100%"></video>
+
+### 🔐 Role-Based Access
+Three built-in roles — `view`, `edit`, and `admin` — control who can see, modify, or manage users. A first-run setup wizard creates the initial administrator account.
+
+### ⚡ Automated KR Updates
+Update key results programmatically via Bearer token authentication. KRs updated through the API are automatically marked with a 🤖 robot icon and tooltip in the UI.
+
+### 🐳 Docker-Ready
+One command to start: `docker compose up -d`. Data persists in SQLite, static files are served by nginx, environment variables let you customize branding and timezone.
+
 ## Architecture
 
 ```
@@ -174,14 +205,4 @@ curl -X PUT \
 
 To get an API token, log in as admin → Users → click 🔄 on the robot user to generate/regenerate a token, then click the truncated token to copy it. Create a robot user with role `edit` via the Add User form in the same panel.
 
-## Features
 
-- Hierarchical objective tree with drag-and-drop reordering
-- Interactive graph mode with SVG connection lines
-- Filter by team or manager
-- Edit mode toggle for create/edit/delete operations
-- Team and manager reference management
-- Fullscreen tree panel
-- User authentication with role-based access control (view / edit / admin)
-- First-run administrator setup
-- User profile management (password change)
