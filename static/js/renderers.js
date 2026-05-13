@@ -118,13 +118,14 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 }
                 const lastUpdated = kr.last_updated ? new Date(kr.last_updated + 'Z').toLocaleString() : 'unknown';
                 const source = kr.source === 'api' ? 'external API' : 'manual edit';
+                const progressTitle = `Progress: ${Math.round(pct)}%\nInitial: ${kr.initial_value || 0}\nCurrent: ${kr.current_value}\nTarget: ${kr.target_value} ${kr.unit}\nLast updated: ${lastUpdated}\nSource: ${source}`;
                 const krRow = document.createElement('div');
                 krRow.className = 'kr-row ' + krClass;
-                krRow.title = `Progress: ${Math.round(pct)}%\nInitial: ${kr.initial_value || 0}\nCurrent: ${kr.current_value}\nTarget: ${kr.target_value} ${kr.unit}\nLast updated: ${lastUpdated}\nSource: ${source}`;
 
+                const robotIcon = kr.source === 'api' ? '<span class="ms-1" title="Updated automatically via external API call">🤖</span>' : '';
                 krRow.innerHTML = `
                     📊 <strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${kr.name}</strong> (${kr.current_value} / ${kr.target_value} ${kr.unit})
-                    <div class="progress"><div class="progress-bar" style="width:${pct}%">${Math.round(pct)}%</div></div>`;
+                    <div class="progress" title="${progressTitle.replace(/"/g, '&quot;')}"><div class="progress-bar" style="width:${pct}%">${Math.round(pct)}%</div></div>${robotIcon}`;
                 if (editMode) {
                     const btnEdit = document.createElement('button');
                     btnEdit.className = 'btn btn-outline-secondary btn-sm py-0 ms-2';
