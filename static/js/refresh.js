@@ -130,6 +130,12 @@ async function refreshTree() {
                 }
             });
         });
+        const collapseBtn = document.getElementById('collapseKRBtn');
+        if (collapseBtn) {
+            collapseBtn.dataset.allCollapsed = 'true';
+            collapseBtn.textContent = '⊟';
+            collapseBtn.title = 'Expand all Key Results';
+        }
     } else if (viewMode === 'tree') {
         renderTreeGraphic(filtered, treeContainer);
     }

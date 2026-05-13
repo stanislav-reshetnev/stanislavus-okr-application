@@ -314,9 +314,20 @@ function toggleAllKRs() {
     const krItems = document.querySelectorAll('.kr-item');
     const carets = document.querySelectorAll('.caret');
     const btn = document.getElementById('collapseKRBtn');
-    const anyExpanded = Array.from(krItems).some(item => item.classList.contains('active'));
 
-    krItems.forEach(item => item.classList.toggle('active'));
-    carets.forEach(caret => caret.classList.toggle('caret-down'));
-    btn.textContent = anyExpanded ? '⊞' : '⊟';
+    const allCollapsed = btn.dataset.allCollapsed === 'true';
+
+    if (allCollapsed) {
+        krItems.forEach(item => item.classList.add('active'));
+        carets.forEach(caret => caret.classList.add('caret-down'));
+        btn.textContent = '⊞';
+        btn.dataset.allCollapsed = 'false';
+        btn.title = 'Collapse all Key Results';
+    } else {
+        krItems.forEach(item => item.classList.remove('active'));
+        carets.forEach(caret => caret.classList.remove('caret-down'));
+        btn.textContent = '⊟';
+        btn.dataset.allCollapsed = 'true';
+        btn.title = 'Expand all Key Results';
+    }
 }
