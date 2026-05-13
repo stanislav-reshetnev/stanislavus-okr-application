@@ -18,6 +18,48 @@ const treePanel = document.getElementById('treePanel');
 const fullscreenBtn = document.getElementById('fullscreenBtn');
 const collapseKRBtn = document.getElementById('collapseKRBtn');
 
+let isPanning = false;
+let panStartX = 0;
+let panStartY = 0;
+let panScrollLeft = 0;
+let panScrollTop = 0;
+
+function initTreePan() {
+    const panel = document.getElementById('treePanel');
+    if (!panel) return;
+
+    panel.addEventListener('mousedown', (e) => {
+        if (viewMode !== 'tree') return;
+        if (e.button !== 0) return;
+        if (e.target.closest('.node-box') || e.target.closest('button') ||
+            e.target.closest('a') || e.target.closest('.popover') ||
+            e.target.closest('.fullscreen-btn') || e.target.closest('.btn'))
+            return;
+
+        isPanning = true;
+        panStartX = e.clientX;
+        panStartY = e.clientY;
+        panScrollLeft = panel.scrollLeft;
+        panScrollTop = panel.scrollTop;
+        panel.classList.add('panning');
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        const dx = e.clientX - panStartX;
+        const dy = e.clientY - panStartY;
+        panel.scrollLeft = panScrollLeft - dx;
+        panel.scrollTop = panScrollTop - dy;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (!isPanning) return;
+        isPanning = false;
+        panel.classList.remove('panning');
+    });
+}
+
 function collectObjectives(nodes) {
     nodes.forEach(node => {
         objectivesMap[node.id] = { id: node.id, parent_id: node.parent_id || null };

@@ -214,6 +214,11 @@ body {
     overflow: auto;
     padding: 1rem;
     box-sizing: border-box;
+    cursor: grab;
+}
+.tree-panel.tree-mode.panning {
+    cursor: grabbing;
+    user-select: none;
 }
 .tree-panel.tree-mode:fullscreen,
 .tree-panel.tree-mode:-webkit-full-screen {

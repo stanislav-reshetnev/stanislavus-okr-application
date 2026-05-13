@@ -106,6 +106,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     refreshManagerList();
     setupRootDropZone();
     initSearch();
+    initTreePan();
 
     fullscreenBtn.addEventListener('click', () => {
         if (treePanel.requestFullscreen) {
