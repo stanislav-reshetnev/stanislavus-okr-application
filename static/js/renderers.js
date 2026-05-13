@@ -308,3 +308,14 @@ function drawGraphConnections(wrapper, rootNodes) {
     rootNodes.forEach(node => drawLines(node));
     wrapper.appendChild(svg);
 }
+
+function toggleAllKRs() {
+    const krItems = document.querySelectorAll('.kr-item');
+    const carets = document.querySelectorAll('.caret');
+    const btn = document.getElementById('collapseKRBtn');
+    const anyExpanded = Array.from(krItems).some(item => item.classList.contains('active'));
+
+    krItems.forEach(item => item.classList.toggle('active'));
+    carets.forEach(caret => caret.classList.toggle('caret-down'));
+    btn.textContent = anyExpanded ? '⊞' : '⊟';
+}

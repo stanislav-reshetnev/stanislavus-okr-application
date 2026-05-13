@@ -69,9 +69,11 @@ async function refreshTree() {
     if (viewMode === 'tree') {
         treePanel.classList.add('tree-mode');
         fullscreenBtn.style.display = 'block';
+        collapseKRBtn.style.display = 'none';
     } else {
         treePanel.classList.remove('tree-mode');
         fullscreenBtn.style.display = 'none';
+        collapseKRBtn.style.display = 'block';
     }
 
     if (viewMode === 'hierarchy') {

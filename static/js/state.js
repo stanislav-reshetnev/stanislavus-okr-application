@@ -15,6 +15,7 @@ const viewModeGroup = document.getElementById('viewModeGroup');
 const body = document.body;
 const treePanel = document.getElementById('treePanel');
 const fullscreenBtn = document.getElementById('fullscreenBtn');
+const collapseKRBtn = document.getElementById('collapseKRBtn');
 
 function collectObjectives(nodes) {
     nodes.forEach(node => {
