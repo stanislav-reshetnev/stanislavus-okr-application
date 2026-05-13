@@ -62,24 +62,30 @@ async function regenerateToken(id) {
 function copyToken(id) {
     const users = JSON.parse(document.getElementById('userList').dataset.users || '[]');
     const user = users.find(u => u.id === id);
-    if (user && user.api_token) {
+    if (!user || !user.api_token) return;
+    if (navigator.clipboard) {
         navigator.clipboard.writeText(user.api_token).then(() => {
             alert('Token copied to clipboard');
         }).catch(() => {
             prompt('Copy this token manually:', user.api_token);
         });
+    } else {
+        prompt('Copy this token manually:', user.api_token);
     }
 }
 
 function copyEmail(id) {
     const users = JSON.parse(document.getElementById('userList').dataset.users || '[]');
     const user = users.find(u => u.id === id);
-    if (user && user.email) {
+    if (!user || !user.email) return;
+    if (navigator.clipboard) {
         navigator.clipboard.writeText(user.email).then(() => {
             alert('Email copied to clipboard');
         }).catch(() => {
             prompt('Copy this email manually:', user.email);
         });
+    } else {
+        prompt('Copy this email manually:', user.email);
     }
 }
 
