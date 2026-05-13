@@ -127,6 +127,16 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 krRow.innerHTML = `
                     📊 <strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${kr.name}</strong> (${kr.current_value} / ${kr.target_value} ${kr.unit})
                     <div class="progress" title="${progressTitle.replace(/"/g, '&quot;')}"><div class="progress-bar ${pctClass}" style="width:${pct}%">${Math.round(pct)}%</div></div>${robotIcon}`;
+                if (kr.doc_link && !editMode) {
+                    const linkIcon = document.createElement('a');
+                    linkIcon.href = kr.doc_link;
+                    linkIcon.target = '_blank';
+                    linkIcon.rel = 'noopener noreferrer';
+                    linkIcon.className = 'ms-1 text-decoration-none';
+                    linkIcon.innerHTML = '🔗';
+                    linkIcon.title = 'Metric info';
+                    krRow.appendChild(linkIcon);
+                }
                 if (editMode) {
                     const btnEdit = document.createElement('button');
                     btnEdit.className = 'btn btn-outline-secondary btn-sm py-0 ms-2';

@@ -47,6 +47,7 @@ async function addKR(objectiveId) {
     document.getElementById('krCurrent').value = 0;
     document.getElementById('krTarget').value = 0;
     document.getElementById('krUnit').value = '';
+    document.getElementById('krDocLink').value = '';
     document.getElementById('krCurlSnippet').textContent = '';
     const addWarning = document.getElementById('krApiWarning');
     if (addWarning) addWarning.classList.add('d-none');
@@ -75,6 +76,7 @@ async function editKR(krId) {
     document.getElementById('krCurrent').value = found.current_value;
     document.getElementById('krTarget').value = found.target_value;
     document.getElementById('krUnit').value = found.unit || '';
+    document.getElementById('krDocLink').value = found.doc_link || '';
 
     const apiWarning = document.getElementById('krApiWarning');
     if (apiWarning) {

@@ -379,7 +379,7 @@ h1, h2, h3, h4, h5 {
     border-color: #cbd5e1;
 }
 .fullscreen-btn { top: 0.5rem; right: 0.5rem; }
-.collapse-kr-btn { top: 0.5rem; left: 0.5rem; }
+.collapse-kr-btn { top: 2.5rem; left: 0.5rem; }
 
 .tree-wrapper { position: relative; }
 

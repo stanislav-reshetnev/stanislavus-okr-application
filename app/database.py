@@ -86,4 +86,8 @@ def init_db(app):
             db.execute('ALTER TABLE key_results ADD COLUMN initial_value REAL DEFAULT 0')
         except sqlite3.OperationalError:
             pass
+        try:
+            db.execute('ALTER TABLE key_results ADD COLUMN doc_link TEXT DEFAULT ""')
+        except sqlite3.OperationalError:
+            pass
         db.commit()
