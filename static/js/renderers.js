@@ -75,13 +75,13 @@ function renderTree(nodes, parentElement, isRoot = false) {
 
         if (node.team_name) {
             const badge = document.createElement('span');
-            badge.className = 'badge bg-info text-dark';
+            badge.className = 'badge badge-team';
             badge.textContent = '👥 ' + node.team_name;
             nodeDiv.appendChild(badge);
         }
         if (node.manager_name) {
             const badge = document.createElement('span');
-            badge.className = 'badge bg-secondary';
+            badge.className = 'badge badge-manager';
             badge.textContent = '👤 ' + node.manager_name;
             nodeDiv.appendChild(badge);
         }
@@ -119,13 +119,14 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 const lastUpdated = kr.last_updated ? new Date(kr.last_updated + 'Z').toLocaleString() : 'unknown';
                 const source = kr.source === 'api' ? 'external API' : 'manual edit';
                 const progressTitle = `Progress: ${Math.round(pct)}%\nInitial: ${kr.initial_value || 0}\nCurrent: ${kr.current_value}\nTarget: ${kr.target_value} ${kr.unit}\nLast updated: ${lastUpdated}\nSource: ${source}`;
+                const pctClass = pct >= 70 ? 'progress-bar-high' : pct >= 25 ? 'progress-bar-mid' : 'progress-bar-low';
                 const krRow = document.createElement('div');
                 krRow.className = 'kr-row ' + krClass;
 
                 const robotIcon = kr.source === 'api' ? '<span class="ms-1" title="Updated automatically via external API call">🤖</span>' : '';
                 krRow.innerHTML = `
                     📊 <strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${kr.name}</strong> (${kr.current_value} / ${kr.target_value} ${kr.unit})
-                    <div class="progress" title="${progressTitle.replace(/"/g, '&quot;')}"><div class="progress-bar" style="width:${pct}%">${Math.round(pct)}%</div></div>${robotIcon}`;
+                    <div class="progress" title="${progressTitle.replace(/"/g, '&quot;')}"><div class="progress-bar ${pctClass}" style="width:${pct}%">${Math.round(pct)}%</div></div>${robotIcon}`;
                 if (editMode) {
                     const btnEdit = document.createElement('button');
                     btnEdit.className = 'btn btn-outline-secondary btn-sm py-0 ms-2';

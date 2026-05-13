@@ -18,6 +18,7 @@ const treePanel = document.getElementById('treePanel');
 const fullscreenBtn = document.getElementById('fullscreenBtn');
 const collapseKRBtn = document.getElementById('collapseKRBtn');
 
+let isLoading = false;
 let isPanning = false;
 let panStartX = 0;
 let panStartY = 0;

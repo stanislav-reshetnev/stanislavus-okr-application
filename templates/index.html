@@ -11,29 +11,22 @@
 <body>
     <div class="container">
         <div class="dashboard-header">
-            <h1>🎯 {{ company_name }} OKR Tree</h1>
+            <div class="brand">
+                <img src="/static/favicon.svg" class="brand-icon" alt="OKR">
+                <h1 class="brand-title">{{ company_name }} OKR Tree</h1>
+            </div>
             <div class="header-actions">
-                <button class="btn btn-primary btn-sm" id="createObjBtn" data-bs-toggle="modal" data-bs-target="#objModal" onclick="prepareObjForm()">
-                    <span>➕</span> Create Objective
-                </button>
-                <button class="btn btn-outline-secondary btn-sm" id="teamsBtn" data-bs-toggle="modal" data-bs-target="#teamModal">
-                    <span>👥</span> Teams
-                </button>
-                <button class="btn btn-outline-secondary btn-sm" id="managersBtn" data-bs-toggle="modal" data-bs-target="#managerModal">
-                    <span>👤</span> Managers
-                </button>
-                <button class="btn btn-outline-secondary btn-sm d-none" id="usersBtn" data-bs-toggle="modal" data-bs-target="#userModal">
-                    <span>🔐</span> Users
-                </button>
+                <button class="btn btn-primary btn-sm" id="createObjBtn" data-bs-toggle="modal" data-bs-target="#objModal" onclick="prepareObjForm()">➕ Create Objective</button>
+                <button class="btn btn-outline-secondary btn-sm" id="teamsBtn" data-bs-toggle="modal" data-bs-target="#teamModal">👥 Teams</button>
+                <button class="btn btn-outline-secondary btn-sm" id="managersBtn" data-bs-toggle="modal" data-bs-target="#managerModal">👤 Managers</button>
+                <button class="btn btn-outline-secondary btn-sm d-none" id="usersBtn" data-bs-toggle="modal" data-bs-target="#userModal">🔐 Users</button>
                 <label class="mode-switch" title="Edit Mode">
                     <input type="checkbox" id="editModeToggle">
                     <span class="toggle"></span>
                     <span class="mode-label">Editing</span>
                 </label>
                 <div class="dropdown" id="profileDropdown">
-                    <button class="btn btn-sm btn-outline-secondary" id="profileBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Profile">
-                        👤
-                    </button>
+                    <button class="avatar-initials" id="profileBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Profile">👤</button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="#" onclick="showProfileModal()">✎ Edit Profile</a></li>
                         <li><hr class="dropdown-divider"></li>
@@ -44,16 +37,16 @@
         </div>
 
         <div class="filter-bar">
-            <span class="text-secondary me-2">Filter:</span>
+            <span class="filter-label">Filter</span>
             <select class="form-select form-select-sm" id="filterTeam" onchange="applyFilter(this)">
-                <option value="">-- All Teams --</option>
+                <option value="">All Teams</option>
             </select>
             <select class="form-select form-select-sm" id="filterManager" onchange="applyFilter(this)">
-                <option value="">-- All Managers --</option>
+                <option value="">All Managers</option>
             </select>
-            <button class="btn btn-outline-secondary btn-sm" id="resetFilterBtn" style="display:none;" onclick="resetFilter()">✕ Reset</button>
+            <button class="chip-reset" id="resetFilterBtn" style="display:none;" onclick="resetFilter()">✕ Reset</button>
             <div class="search-group">
-                <button class="btn btn-outline-secondary btn-sm" id="searchToggleBtn" title="Search by query in titles">🔍</button>
+                <button class="btn btn-outline-secondary btn-sm" id="searchToggleBtn" title="Search">🔍</button>
                 <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Search objectives and KRs..." style="display:none">
             </div>
             <div class="btn-group btn-group-sm ms-auto" id="viewModeGroup" role="group">
@@ -64,6 +57,22 @@
 
         <div class="tree-wrapper">
             <div class="tree-panel" id="treePanel">
+                <div id="loadingSkeleton" class="skeleton-container">
+                    <div class="skeleton skeleton-lg skeleton-block"></div>
+                    <div class="skeleton skeleton-md" style="margin-left:1.5rem"></div>
+                    <div class="skeleton skeleton-sm" style="margin-left:3rem"></div>
+                    <div class="skeleton skeleton-md" style="margin-left:1.5rem"></div>
+                    <div class="skeleton skeleton-sm" style="margin-left:3rem"></div>
+                    <div class="skeleton skeleton-lg skeleton-block" style="margin-top:1rem"></div>
+                    <div class="skeleton skeleton-md" style="margin-left:1.5rem"></div>
+                    <div class="skeleton skeleton-md" style="margin-left:1.5rem"></div>
+                </div>
+                <div id="emptyState" class="empty-state" style="display:none">
+                    <div class="empty-icon">🎯</div>
+                    <div class="empty-title">No objectives yet</div>
+                    <div class="empty-desc">Create your first objective to get started.</div>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#objModal" onclick="prepareObjForm()">➕ Create Objective</button>
+                </div>
                 <div id="tree"></div>
             </div>
             <button class="fullscreen-btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
@@ -128,14 +137,13 @@
                             <label class="form-label">Doc Link</label>
                             <input type="url" class="form-control" id="objDocLink" placeholder="https://...">
                         </div>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-primary w-100">Save</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Key Result form -->
     <div class="modal fade" id="krModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -179,7 +187,7 @@
                                  style="cursor:pointer;background:#f8f9fa;padding:8px;border-radius:4px;font-size:12px;white-space:pre-wrap;word-break:break-all;"
                                  onclick="copyCurlCode()" title="Click to copy">—</pre>
                         </div>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-primary w-100">Save</button>
                     </form>
                 </div>
             </div>
@@ -226,7 +234,7 @@
                             <label class="form-label">Confirm New Password</label>
                             <input type="password" class="form-control" id="profileConfirmPassword" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Change Password</button>
+                        <button type="submit" class="btn btn-primary w-100">Change Password</button>
                     </form>
                 </div>
             </div>

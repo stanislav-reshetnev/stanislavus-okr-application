@@ -2,9 +2,9 @@ async function populateFilters() {
     const [teams, managers] = await Promise.all([loadTeams(), loadManagers()]);
     const teamSelect = document.getElementById('filterTeam');
     const managerSelect = document.getElementById('filterManager');
-    teamSelect.innerHTML = '<option value="">-- All Teams --</option>' +
+    teamSelect.innerHTML = '<option value="">All Teams</option>' +
         teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
-    managerSelect.innerHTML = '<option value="">-- All Managers --</option>' +
+    managerSelect.innerHTML = '<option value="">All Managers</option>' +
         managers.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
 }
 
@@ -79,11 +79,28 @@ function filterTree(nodes, query) {
 
 async function refreshTree() {
     const treeContainer = document.getElementById('tree');
+    const skeleton = document.getElementById('loadingSkeleton');
+    const emptyState = document.getElementById('emptyState');
+
     treeContainer.innerHTML = '';
     objectivesMap = {};
+
+    if (skeleton) skeleton.style.display = '';
+    if (emptyState) emptyState.style.display = 'none';
+    treeContainer.style.display = 'none';
+
     const data = await loadTree(selectedTeamId, selectedManagerId);
     collectObjectives(data);
     const filtered = filterTree(data, searchQuery);
+
+    if (skeleton) skeleton.style.display = 'none';
+
+    if (!filtered.length) {
+        if (emptyState) emptyState.style.display = '';
+        treeContainer.style.display = 'none';
+    } else {
+        treeContainer.style.display = '';
+    }
 
     const treePanel = document.getElementById('treePanel');
     if (viewMode === 'tree') {

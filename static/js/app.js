@@ -100,6 +100,8 @@ window.addEventListener('DOMContentLoaded', async () => {
         usersBtn.classList.remove('d-none');
     }
 
+    const avatarBtn = document.getElementById('profileBtn');
+
     await populateFilters();
     await refreshTree();
     refreshTeamList();
