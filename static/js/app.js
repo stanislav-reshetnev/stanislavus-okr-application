@@ -26,7 +26,8 @@ document.getElementById('krForm').addEventListener('submit', async (e) => {
         current_value: parseFloat(document.getElementById('krCurrent').value) || 0,
         target_value: parseFloat(document.getElementById('krTarget').value) || 0,
         unit: document.getElementById('krUnit').value,
-        doc_link: document.getElementById('krDocLink').value || ''
+        doc_link: document.getElementById('krDocLink').value || '',
+        description: document.getElementById('krDescription').value || ''
     };
     if (id) {
         await fetch(`/api/keyresults/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });

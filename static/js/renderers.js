@@ -106,13 +106,23 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 if (kr.target_value > 0 || kr.initial_value > 0) {
                     krClass = pct >= 100 ? 'kr-green' : 'kr-yellow';
                 }
-                const lastUpdated = kr.last_updated ? new Date(kr.last_updated + 'Z').toLocaleString() : 'unknown';
+                let lastUpdated = '—';
+                if (kr.last_updated) {
+                    const d = new Date(kr.last_updated + 'Z');
+                    lastUpdated = isNaN(d) ? '—' : d.toLocaleString();
+                }
                 const source = kr.source === 'api' ? 'external API' : 'manual edit';
                 const progressTitle = `Progress: ${Math.round(pct)}%\nInitial: ${kr.initial_value || 0}\nCurrent: ${kr.current_value}\nTarget: ${kr.target_value} ${kr.unit}\nLast updated: ${lastUpdated}\nSource: ${source}`;
                 const pctClass = pct >= 70 ? 'progress-bar-high' : pct >= 25 ? 'progress-bar-mid' : 'progress-bar-low';
                 const krRow = document.createElement('div');
                 krRow.className = 'kr-row ' + krClass;
                 krRow.dataset.krId = kr.id;
+
+                krRow.addEventListener('click', (e) => {
+                    if (editMode) return;
+                    if (e.target.closest('.drag-handle, .btn, .progress')) return;
+                    showKRDetail(kr, krNumber);
+                });
 
                 const robotIcon = kr.source === 'api' ? '<span class="ms-1" title="Updated automatically via external API call">🤖</span>' : '';
                 const krHandleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;

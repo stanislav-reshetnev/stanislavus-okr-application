@@ -54,6 +54,7 @@ async function addKR(objectiveId) {
     document.getElementById('krTarget').value = 0;
     document.getElementById('krUnit').value = '';
     document.getElementById('krDocLink').value = '';
+    document.getElementById('krDescription').value = '';
     document.getElementById('krCurlSnippet').textContent = '';
     const addWarning = document.getElementById('krApiWarning');
     if (addWarning) addWarning.classList.add('d-none');
@@ -83,6 +84,7 @@ async function editKR(krId) {
     document.getElementById('krTarget').value = found.target_value;
     document.getElementById('krUnit').value = found.unit || '';
     document.getElementById('krDocLink').value = found.doc_link || '';
+    document.getElementById('krDescription').value = found.description || '';
 
     const apiWarning = document.getElementById('krApiWarning');
     if (apiWarning) {
@@ -109,6 +111,33 @@ async function editKR(krId) {
     document.getElementById('krCurlSnippet').textContent = curl;
 
     new bootstrap.Modal(document.getElementById('krModal')).show();
+}
+
+function showKRDetail(kr, krNumber) {
+    const pct = Math.round(calculateKRProgress(kr));
+    document.getElementById('krDetailLabel').textContent = krNumber + ': ' + kr.name;
+    const bar = document.getElementById('krDetailProgressBar');
+    bar.style.width = pct + '%';
+    bar.textContent = pct + '%';
+    document.getElementById('krDetailInitial').textContent = kr.initial_value ?? 0;
+    document.getElementById('krDetailCurrent').textContent = kr.current_value;
+    document.getElementById('krDetailTarget').textContent = (kr.target_value + ' ' + kr.unit).trim();
+    document.getElementById('krDetailSource').textContent = kr.source === 'api' ? 'External API' : 'Manual edit';
+    let lastUpdated = '—';
+    if (kr.last_updated) {
+        const d = new Date(kr.last_updated + 'Z');
+        lastUpdated = isNaN(d) ? '—' : d.toLocaleString();
+    }
+    document.getElementById('krDetailLastUpdated').textContent = lastUpdated;
+    const descEl = document.getElementById('krDetailDescription');
+    const descWrap = document.getElementById('krDetailDescriptionWrap');
+    if (kr.description) {
+        descEl.textContent = kr.description;
+        descWrap.style.display = '';
+    } else {
+        descWrap.style.display = 'none';
+    }
+    new bootstrap.Modal(document.getElementById('krDetailModal')).show();
 }
 
 function copyCurlCode() {

@@ -28,15 +28,16 @@ def create(db, objective_id, data):
         "unit": data.get('unit', ''),
         "source": data.get('source', 'manual'),
         "doc_link": data.get('doc_link', ''),
+        "description": data.get('description', ''),
         "position": max_pos + 1
     }
     db.execute(
         'INSERT INTO key_results '
-        '(id, objective_id, name, target_value, current_value, initial_value, unit, source, doc_link, position, last_updated) '
-        'VALUES (?,?,?,?,?,?,?,?,?,?, datetime("now"))',
+        '(id, objective_id, name, target_value, current_value, initial_value, unit, source, doc_link, description, position, last_updated) '
+        'VALUES (?,?,?,?,?,?,?,?,?,?,?, datetime("now"))',
         (kr['id'], objective_id, kr['name'], kr['target_value'],
          kr['current_value'], kr['initial_value'], kr['unit'], kr['source'],
-         kr['doc_link'], kr['position'])
+         kr['doc_link'], kr['description'], kr['position'])
     )
     db.commit()
     kr['last_updated'] = db.execute(
@@ -48,7 +49,7 @@ def create(db, objective_id, data):
 def update(db, kr_id, data):
     fields = []
     values = []
-    for k in ['name', 'target_value', 'current_value', 'initial_value', 'unit', 'doc_link', 'position']:
+    for k in ['name', 'target_value', 'current_value', 'initial_value', 'unit', 'doc_link', 'description', 'position']:
         if k in data:
             fields.append(f"{k}=?")
             values.append(data[k])

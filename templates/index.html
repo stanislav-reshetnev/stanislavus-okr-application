@@ -156,6 +156,10 @@
                             <label class="form-label">Name</label>
                             <input type="text" class="form-control" id="krName" required>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="krDescription" rows="3" placeholder="Metric calculation logic, specifics..."></textarea>
+                        </div>
                         <div class="row mb-3 kr-value-group">
                             <div class="col-4">
                                 <label class="form-label">Initial Value</label>
@@ -193,6 +197,32 @@
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Save</button>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="krDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="krDetailLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-sm table-borderless mb-3">
+                        <tr><td class="text-secondary">Progress</td><td><div class="progress mb-0" style="height:20px"><div class="progress-bar" id="krDetailProgressBar" style="width:0%">0%</div></div></td></tr>
+                        <tr><td class="text-secondary">Initial</td><td id="krDetailInitial"></td></tr>
+                        <tr><td class="text-secondary">Current</td><td id="krDetailCurrent"></td></tr>
+                        <tr><td class="text-secondary">Target</td><td id="krDetailTarget"></td></tr>
+                        <tr><td class="text-secondary">Source</td><td id="krDetailSource"></td></tr>
+                        <tr><td class="text-secondary">Last update</td><td id="krDetailLastUpdated"></td></tr>
+                    </table>
+                    <hr>
+                    <div id="krDetailDescriptionWrap">
+                        <strong>Description</strong>
+                        <p id="krDetailDescription" class="mt-1 mb-0 text-muted" style="font-size:0.9rem;white-space:pre-wrap"></p>
+                    </div>
                 </div>
             </div>
         </div>
