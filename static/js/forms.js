@@ -137,6 +137,13 @@ function showKRDetail(kr, krNumber) {
     } else {
         descWrap.style.display = 'none';
     }
+    const linkEl = document.getElementById('krDetailDocLink');
+    if (kr.doc_link) {
+        linkEl.href = kr.doc_link;
+        linkEl.style.display = 'inline-flex';
+    } else {
+        linkEl.style.display = 'none';
+    }
     new bootstrap.Modal(document.getElementById('krDetailModal')).show();
 }
 

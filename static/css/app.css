@@ -376,6 +376,24 @@ h1, h2, h3, h4, h5 {
     z-index: 20;
 }
 
+#krDetailDocLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all var(--transition);
+}
+#krDetailDocLink:hover {
+    background: #ddd6fe;
+    color: var(--primary-hover);
+}
+
 .fullscreen-btn,
 .collapse-kr-btn {
     position: absolute;
