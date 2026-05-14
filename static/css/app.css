@@ -527,7 +527,7 @@ body.edit-mode .kr-name {
 .progress {
     height: 18px;
     width: 130px;
-    background: #eef2f6;
+    background: #eeeeee;
     border-radius: 20px;
     overflow: hidden;
     display: inline-flex;
