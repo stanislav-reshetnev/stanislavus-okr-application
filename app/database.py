@@ -103,6 +103,39 @@ def init_db(app):
         except sqlite3.OperationalError:
             pass
 
+        needs_backfill = False
+
+        rows = db.execute(
+            'SELECT id, parent_id, position FROM objectives ORDER BY parent_id, position, id'
+        ).fetchall()
+        current = None
+        idx = 0
+        for r in rows:
+            if r['parent_id'] != current:
+                current = r['parent_id']
+                idx = 0
+            if r['position'] != idx:
+                db.execute('UPDATE objectives SET position = ? WHERE id = ?', (idx, r['id']))
+                needs_backfill = True
+            idx += 1
+
+        rows = db.execute(
+            'SELECT id, objective_id, position FROM key_results ORDER BY objective_id, position, id'
+        ).fetchall()
+        current = None
+        idx = 0
+        for r in rows:
+            if r['objective_id'] != current:
+                current = r['objective_id']
+                idx = 0
+            if r['position'] != idx:
+                db.execute('UPDATE key_results SET position = ? WHERE id = ?', (idx, r['id']))
+                needs_backfill = True
+            idx += 1
+
+        if needs_backfill:
+            db.commit()
+
         db.execute('''
             CREATE TABLE IF NOT EXISTS _meta_columns (
                 table_name TEXT,
