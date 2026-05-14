@@ -74,6 +74,7 @@
                     <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#objModal" onclick="prepareObjForm()">➕ Create Objective</button>
                 </div>
                 <div id="tree"></div>
+                <div class="zoom-hint" id="zoomHint">Ctrl+Scroll to zoom · Drag to pan</div>
             </div>
             <button class="fullscreen-btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
             <button class="collapse-kr-btn" id="collapseKRBtn" title="Collapse / Expand Key Results for all objectives" onclick="toggleAllKRs()">⊞</button>
@@ -216,7 +217,7 @@
                         <tr><td class="text-secondary">Current</td><td id="krDetailCurrent"></td></tr>
                         <tr><td class="text-secondary">Target</td><td id="krDetailTarget"></td></tr>
                         <tr><td class="text-secondary">Source</td><td id="krDetailSource"></td></tr>
-                        <tr><td class="text-secondary">Last update</td><td id="krDetailLastUpdated"></td></tr>
+                        <tr><td class="text-secondary">Value last updated</td><td id="krDetailLastUpdated"></td></tr>
                     </table>
                     <hr>
                     <div id="krDetailDescriptionWrap">

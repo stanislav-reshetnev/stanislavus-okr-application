@@ -112,7 +112,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
                     lastUpdated = isNaN(d) ? '—' : d.toLocaleString();
                 }
                 const source = kr.source === 'api' ? 'external API' : 'manual edit';
-                const progressTitle = `Progress: ${Math.round(pct)}%\nInitial: ${kr.initial_value || 0}\nCurrent: ${kr.current_value}\nTarget: ${kr.target_value} ${kr.unit}\nLast updated: ${lastUpdated}\nSource: ${source}`;
+                const progressTitle = `Progress: ${Math.round(pct)}%\nInitial: ${kr.initial_value || 0}\nCurrent: ${kr.current_value}\nTarget: ${kr.target_value} ${kr.unit}\nValue last updated: ${lastUpdated}\nSource: ${source}`;
                 const pctClass = pct >= 70 ? 'progress-bar-high' : pct >= 25 ? 'progress-bar-mid' : 'progress-bar-low';
                 const krRow = document.createElement('div');
                 krRow.className = 'kr-row ' + krClass;

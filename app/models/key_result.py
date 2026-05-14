@@ -49,19 +49,30 @@ def create(db, objective_id, data):
 def update(db, kr_id, data):
     fields = []
     values = []
-    for k in ['name', 'target_value', 'current_value', 'initial_value', 'unit', 'doc_link', 'description', 'position']:
+    for k in ['name', 'target_value', 'initial_value', 'unit', 'doc_link', 'description', 'position']:
         if k in data:
             fields.append(f"{k}=?")
             values.append(data[k])
-    fields.append('last_updated = datetime("now")')
-    source = data.get('source', 'manual')
-    fields.append('source = ?')
-    values.append(source)
+
+    metric_refresh = False
+    if 'current_value' in data:
+        old = db.execute(
+            'SELECT current_value FROM key_results WHERE id=?', (kr_id,)
+        ).fetchone()
+        metric_refresh = old and old['current_value'] != data['current_value']
+        fields.append('current_value=?')
+        values.append(data['current_value'])
 
     if not fields:
         return False
     values.append(kr_id)
     db.execute(f"UPDATE key_results SET {', '.join(fields)} WHERE id=?", values)
+
+    if metric_refresh:
+        db.execute(
+            'UPDATE key_results SET last_updated = datetime("now"), source = ? WHERE id=?',
+            (data.get('source', 'manual'), kr_id)
+        )
     db.commit()
     return True
 

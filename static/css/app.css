@@ -356,6 +356,26 @@ h1, h2, h3, h4, h5 {
     min-height: 0;
 }
 
+.zoom-hint {
+    display: none;
+}
+.tree-panel.tree-mode:fullscreen .zoom-hint,
+.tree-panel.tree-mode:-webkit-full-screen .zoom-hint {
+    display: block;
+    position: fixed;
+    bottom: 1rem;
+    right: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    background: var(--surface);
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-xs);
+    pointer-events: none;
+    z-index: 20;
+}
+
 .fullscreen-btn,
 .collapse-kr-btn {
     position: absolute;

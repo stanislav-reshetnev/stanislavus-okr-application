@@ -102,4 +102,63 @@ def init_db(app):
             db.execute('ALTER TABLE key_results ADD COLUMN description TEXT DEFAULT ""')
         except sqlite3.OperationalError:
             pass
+
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS _meta_columns (
+                table_name TEXT,
+                column_name TEXT,
+                description TEXT,
+                PRIMARY KEY (table_name, column_name)
+            )
+        ''')
+        descriptions = {
+            'objectives': {
+                'id': 'Primary key, UUID',
+                'name': 'Objective name',
+                'parent_id': 'Parent objective ID for hierarchy',
+                'team_id': 'Owning team ID',
+                'manager_id': 'Responsible manager ID',
+                'doc_link': 'Link to documentation',
+                'position': 'Sort order among siblings (0-based)',
+            },
+            'key_results': {
+                'id': 'Primary key, UUID',
+                'objective_id': 'Parent objective ID',
+                'name': 'Key result name',
+                'target_value': 'Target value (goal)',
+                'current_value': 'Current measured value. Changing this refreshes last_updated and source.',
+                'initial_value': 'Starting value at creation',
+                'unit': 'Unit of measurement (%, pcs, $, etc.)',
+                'source': 'Source of the last metric update: "manual" or "api". Auto-updated when current_value changes.',
+                'doc_link': 'Link to metric source or documentation',
+                'description': 'Internal notes about metric calculation logic',
+                'position': 'Sort order among siblings (0-based)',
+                'last_updated': 'Timestamp of the last current_value change',
+            },
+            'users': {
+                'id': 'Primary key, UUID',
+                'email': 'User email / login',
+                'password_hash': 'bcrypt password hash',
+                'role': 'Access level: view, edit, admin',
+                'registered_at': 'Account creation timestamp',
+                'last_login_at': 'Last successful login timestamp',
+                'api_token': 'Bearer token for API access',
+                'api_token_generated_at': 'Token generation/regeneration timestamp',
+            },
+            'teams': {
+                'id': 'Primary key, UUID',
+                'name': 'Team name',
+            },
+            'managers': {
+                'id': 'Primary key, UUID',
+                'name': 'Manager name',
+            },
+        }
+        for table_name, cols in descriptions.items():
+            for col_name, desc in cols.items():
+                db.execute(
+                    'INSERT OR REPLACE INTO _meta_columns (table_name, column_name, description) VALUES (?, ?, ?)',
+                    (table_name, col_name, desc)
+                )
+
         db.commit()

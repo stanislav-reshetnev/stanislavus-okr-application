@@ -142,7 +142,7 @@ Three roles are supported:
 | Method | Path | Action |
 |--------|------|--------|
 | POST | `/api/objectives/<obj_id>/keyresults` | Add KR to objective |
-| PUT | `/api/keyresults/<id>` | Update KR (e.g. `{"current_value": 42, "source": "api"}`) |
+| PUT | `/api/keyresults/<id>` | Update KR fields. Only a current_value change refreshes last_updated and source. |
 | DELETE | `/api/keyresults/<id>` | Delete KR |
 
 ### Teams
@@ -202,6 +202,18 @@ curl -X PUT \
   -d '{"current_value": 42, "source": "api"}' \
   http://localhost:5000/api/keyresults/<kr_id>
 ```
+
+### Update behavior
+
+The `PUT /api/keyresults/<id>` endpoint differentiates between metric updates and metadata changes:
+
+| Scenario | `last_updated` | `source` |
+|----------|---------------|----------|
+| `current_value` changes to a new value | ✅ Updated | ✅ Set to `source` value (default: `"manual"`) |
+| `current_value` sent with the same value | ❌ Unchanged | ❌ Unchanged |
+| Only metadata fields changed (`name`, `description`, `target_value`, `unit`, `doc_link`, `initial_value`) | ❌ Unchanged | ❌ Unchanged |
+
+This ensures that `last_updated` and `source` always reflect the **last actual metric measurement**, not cosmetic edits.
 
 To get an API token, log in as admin → Users → click 🔄 on the robot user to generate/regenerate a token, then click the truncated token to copy it. Create a robot user with role `edit` via the Add User form in the same panel.
 
