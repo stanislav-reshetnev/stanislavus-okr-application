@@ -534,8 +534,7 @@ body.edit-mode .kr-name {
 }
 body:not(.edit-mode) .kr-row { cursor: default; }
 body:not(.edit-mode) .kr-row:hover { background: var(--primary-light); }
-body:not(.edit-mode) .kr-name { cursor: pointer; color: var(--primary); }
-body:not(.edit-mode) .kr-name:hover { text-decoration: underline; }
+body:not(.edit-mode) .kr-name { cursor: pointer; }
 
 .kr-row .progress { flex-shrink: 0; }
 .kr-row .btn-sm { flex-shrink: 0; }
