@@ -19,6 +19,10 @@ Quickly narrow down objectives by team or manager. Use the real-time text search
 ### 🕸️ Interactive Graph Mode
 Switch to a visual tree view with SVG connection lines that reveal the parent-child relationships between objectives. Pan the canvas by dragging with your mouse.
 
+<p>
+    <img src="https://raw.githubusercontent.com/stanislav-reshetnev/stanislavus-okr-application/main/screenshots/OKR_tree_view.gif" alt="OKR Tree - Interactive Graph Mode" />
+<p>
+
 ### ✏️ Edit Mode
 Enable edit mode to create, edit, reorder, and delete objectives and key results. Drag-and-drop to restructure the tree. Manage teams and managers in dedicated reference panels.
 
