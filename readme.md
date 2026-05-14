@@ -9,22 +9,18 @@ Built with Flask + SQLite + Bootstrap 5, served via Docker Compose (gunicorn + n
 ### 📋 Hierarchical View
 Explore your OKR tree in a familiar nested list. Expand/collapse key results, track progress with color-coded bars, see team assignments and responsible managers at a glance.
 
-<video src="https://raw.githubusercontent.com/stanislav-reshetnev/stanislavus-okr-application/main/screens/01_OKR_view_hierarchy.webm" controls width="100%"></video>
+<p>
+    <img src="https://raw.githubusercontent.com/stanislav-reshetnev/stanislavus-okr-application/main/screenshots/OKR_simple_view.gif" alt="OKR Tree - Hierarchical View" />
+<p>
 
 ### 🔍 Filtering & Search
 Quickly narrow down objectives by team or manager. Use the real-time text search to find specific objectives or key results across the entire tree.
 
-<video src="https://raw.githubusercontent.com/stanislav-reshetnev/stanislavus-okr-application/main/screens/02_OKR_view_hierarchy_filtering.webm" controls width="100%"></video>
-
 ### 🕸️ Interactive Graph Mode
 Switch to a visual tree view with SVG connection lines that reveal the parent-child relationships between objectives. Pan the canvas by dragging with your mouse.
 
-<video src="https://raw.githubusercontent.com/stanislav-reshetnev/stanislavus-okr-application/main/screens/03_OKR_view_tree.webm" controls width="100%"></video>
-
 ### ✏️ Edit Mode
 Enable edit mode to create, edit, reorder, and delete objectives and key results. Drag-and-drop to restructure the tree. Manage teams and managers in dedicated reference panels.
-
-<video src="https://raw.githubusercontent.com/stanislav-reshetnev/stanislavus-okr-application/main/screens/04_OKR_edit_tree.webm" controls width="100%"></video>
 
 ### 🔐 Role-Based Access
 Three built-in roles — `view`, `edit`, and `admin` — control who can see, modify, or manage users. A first-run setup wizard creates the initial administrator account.
