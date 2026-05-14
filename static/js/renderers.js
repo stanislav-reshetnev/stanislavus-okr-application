@@ -438,7 +438,7 @@ function toggleAllKRs() {
     const btn = document.getElementById('collapseKRBtn');
     const anyExpanded = Array.from(krItems).some(item => item.classList.contains('active'));
 
-    krItems.forEach(item => item.classList.toggle('active'));
-    carets.forEach(caret => caret.classList.toggle('caret-down'));
+    krItems.forEach(item => item.classList.toggle('active', !anyExpanded));
+    carets.forEach(caret => caret.classList.toggle('caret-down', !anyExpanded));
     btn.textContent = anyExpanded ? '⊞' : '⊟';
 }
