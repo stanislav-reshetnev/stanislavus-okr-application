@@ -107,7 +107,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     await refreshTree();
     refreshTeamList();
     refreshManagerList();
-    setupRootDropZone();
     initSearch();
     initTreePan();
 

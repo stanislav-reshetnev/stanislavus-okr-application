@@ -391,10 +391,11 @@ h1, h2, h3, h4, h5 {
 }
 
 .node {
-    margin: 0.35rem 0;
-    padding: 0.3rem 0;
+    margin: 0.25rem 0;
+    padding: 0.2rem 0;
     border-radius: var(--radius-sm);
-    transition: background var(--transition), box-shadow var(--transition);
+    transition: background var(--transition), box-shadow var(--transition), border-color var(--transition);
+    border: 3px solid transparent;
 }
 .node:hover { background: #fafbfc; }
 .node.drag-over {
@@ -409,13 +410,31 @@ h1, h2, h3, h4, h5 {
     align-items: center;
     gap: 0.4rem;
     flex-wrap: nowrap;
-    cursor: grab;
     padding: 0.3rem 0.5rem;
     border-radius: var(--radius-sm);
     transition: all var(--transition);
 }
-.node-content:active { cursor: grabbing; }
+
 .dragging { opacity: 0.4; }
+
+/* ========== Drag Handle ========== */
+.drag-handle {
+    cursor: grab;
+    color: var(--text-tertiary);
+    padding: 0 3px;
+    user-select: none;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    display: none;
+}
+body.edit-mode .drag-handle { display: inline; }
+.drag-handle:active { cursor: grabbing; }
+
+/* ========== Drop Indicators ========== */
+.node.drop-before { border-top-color: var(--primary); }
+.node.drop-after { border-bottom-color: var(--primary); }
+.kr-row.drop-before { border-top-color: var(--primary); }
+.kr-row.drop-after { border-bottom-color: var(--primary); }
 
 .objective-name, .kr-name {
     display: inline-block;
@@ -501,10 +520,11 @@ body.edit-mode .kr-name {
     align-items: center;
     gap: 0.4rem;
     flex-wrap: nowrap;
-    margin-bottom: 0.2rem;
-    padding: 0.25rem 0.4rem;
+    margin-bottom: 0.15rem;
+    padding: 0.2rem 0.4rem;
     border-radius: var(--radius-sm);
-    transition: background var(--transition);
+    transition: background var(--transition), border-color var(--transition);
+    border: 2px solid transparent;
 }
 .kr-row:nth-child(odd) {
     background: #fafbfc;

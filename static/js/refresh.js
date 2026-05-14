@@ -35,29 +35,22 @@ function resetFilter() {
     refreshTree();
 }
 
-async function moveObjective(objectiveId, newParentId) {
-    await fetch(`/api/objectives/${objectiveId}`, {
+async function reorderObjectives(items) {
+    await fetch('/api/objectives/reorder', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ parent_id: newParentId })
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({items})
     });
-    refreshTree();
+    await refreshTree({ skipSkeleton: true });
 }
 
-function setupRootDropZone() {
-    treePanel.addEventListener('dragover', (e) => {
-        if (!editMode) return;
-        if (!e.target.closest('.node')) e.preventDefault();
+async function reorderKRs(items) {
+    await fetch('/api/keyresults/reorder', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({items})
     });
-    treePanel.addEventListener('drop', (e) => {
-        if (!editMode) return;
-        const closestNode = e.target.closest('.node');
-        if (!closestNode) {
-            e.preventDefault();
-            const draggedId = e.dataTransfer.getData('text/plain');
-            if (draggedId) moveObjective(draggedId, null);
-        }
-    });
+    await refreshTree({ skipSkeleton: true });
 }
 
 function filterTree(nodes, query) {
@@ -77,29 +70,36 @@ function filterTree(nodes, query) {
     }, []);
 }
 
-async function refreshTree() {
+async function refreshTree(opts = {}) {
+    const { skipSkeleton } = opts;
     const treeContainer = document.getElementById('tree');
     const skeleton = document.getElementById('loadingSkeleton');
     const emptyState = document.getElementById('emptyState');
 
-    treeContainer.innerHTML = '';
-    objectivesMap = {};
+    const expandedObjectives = new Set();
+    document.querySelectorAll('.kr-item.active').forEach(el => {
+        const li = el.closest('li[data-object-id]');
+        if (li) expandedObjectives.add(li.dataset.objectId);
+    });
 
-    if (skeleton) skeleton.style.display = '';
-    if (emptyState) emptyState.style.display = 'none';
-    treeContainer.style.display = 'none';
+    if (!skipSkeleton) {
+        treeContainer.innerHTML = '';
+        if (skeleton) skeleton.style.display = '';
+        if (emptyState) emptyState.style.display = 'none';
+        treeContainer.style.display = 'none';
+    }
 
     const data = await loadTree(selectedTeamId, selectedManagerId);
-    collectObjectives(data);
     const filtered = filterTree(data, searchQuery);
 
-    if (skeleton) skeleton.style.display = 'none';
-
-    if (!filtered.length) {
-        if (emptyState) emptyState.style.display = '';
-        treeContainer.style.display = 'none';
-    } else {
-        treeContainer.style.display = '';
+    if (!skipSkeleton) {
+        if (skeleton) skeleton.style.display = 'none';
+        if (!filtered.length) {
+            if (emptyState) emptyState.style.display = '';
+            treeContainer.style.display = 'none';
+        } else {
+            treeContainer.style.display = '';
+        }
     }
 
     const treePanel = document.getElementById('treePanel');
@@ -113,6 +113,8 @@ async function refreshTree() {
         collapseKRBtn.style.display = 'block';
     }
 
+    treeContainer.innerHTML = '';
+
     if (viewMode === 'hierarchy') {
         if (graphResizeHandler) {
             window.removeEventListener('resize', graphResizeHandler);
@@ -120,6 +122,15 @@ async function refreshTree() {
         }
         graphCurrentRoots = null;
         renderTree(filtered, treeContainer, true);
+        expandedObjectives.forEach(id => {
+            const li = treeContainer.querySelector(`li[data-object-id="${id}"]`);
+            if (li) {
+                const caret = li.querySelector('.caret');
+                const krBlock = li.querySelector('.kr-item');
+                if (caret) caret.classList.add('caret-down');
+                if (krBlock) krBlock.classList.add('active');
+            }
+        });
         document.querySelectorAll('.caret').forEach(caret => {
             caret.addEventListener('click', function() {
                 this.classList.toggle('caret-down');
@@ -130,12 +141,6 @@ async function refreshTree() {
                 }
             });
         });
-        const collapseBtn = document.getElementById('collapseKRBtn');
-        if (collapseBtn) {
-            collapseBtn.dataset.allCollapsed = 'true';
-            collapseBtn.textContent = '⊟';
-            collapseBtn.title = 'Expand all Key Results';
-        }
     } else if (viewMode === 'tree') {
         renderTreeGraphic(filtered, treeContainer);
     }

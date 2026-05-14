@@ -3,7 +3,6 @@ let selectedManagerId = '';
 let searchQuery = '';
 let editMode = false;
 let viewMode = 'hierarchy';
-let objectivesMap = {};
 
 let graphResizeHandler = null;
 let graphCurrentRoots = null;
@@ -61,22 +60,36 @@ function initTreePan() {
     });
 }
 
-function collectObjectives(nodes) {
-    nodes.forEach(node => {
-        objectivesMap[node.id] = { id: node.id, parent_id: node.parent_id || null };
-        if (node.children && node.children.length) {
-            collectObjectives(node.children);
+function buildNumberedTree(objectives) {
+    const objMap = {};
+    objectives.forEach(o => {
+        objMap[o.id] = { ...o, children: [] };
+    });
+    const roots = [];
+    Object.values(objMap).forEach(o => {
+        if (o.parent_id && objMap[o.parent_id]) {
+            objMap[o.parent_id].children.push(o);
+        } else {
+            roots.push(o);
         }
     });
-}
-
-function isDescendant(descendantId, ancestorId) {
-    let current = objectivesMap[descendantId];
-    while (current) {
-        if (current.id === ancestorId) return true;
-        current = current.parent_id ? objectivesMap[current.parent_id] : null;
+    function sortByPosition(nodes) {
+        nodes.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+        nodes.forEach(n => sortByPosition(n.children));
     }
-    return false;
+    sortByPosition(roots);
+    const result = [];
+    function walk(nodes, prefix) {
+        nodes.forEach(node => {
+            const localNum = (node.position ?? 0) + 1;
+            const code = prefix ? `${prefix}.${localNum}` : `O${localNum}`;
+            node.displayCode = code;
+            result.push(node);
+            if (node.children.length) walk(node.children, code);
+        });
+    }
+    walk(roots, '');
+    return result;
 }
 
 function calculateKRProgress(kr) {

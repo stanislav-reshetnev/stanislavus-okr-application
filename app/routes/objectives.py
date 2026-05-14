@@ -39,6 +39,16 @@ def create_objective():
     return jsonify(obj), 201
 
 
+@objectives_bp.route('/api/objectives/reorder', methods=['PUT'])
+@login_required
+@role_required('edit', 'admin')
+def reorder_objectives():
+    db = get_db()
+    items = request.json.get('items', [])
+    objective_model.reorder(db, items)
+    return jsonify({"status": "ok"})
+
+
 @objectives_bp.route('/api/objectives/<obj_id>', methods=['PUT'])
 @login_required
 @role_required('edit', 'admin')

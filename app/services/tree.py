@@ -1,6 +1,14 @@
+def _sort_children(tree):
+    for obj in tree:
+        obj['children'] = sorted(obj['children'], key=lambda x: x.get('position', 0))
+        obj['keyresults'] = sorted(obj['keyresults'], key=lambda x: x.get('position', 0))
+        _sort_children(obj['children'])
+    return tree
+
+
 def build_tree(db, team_filter=None, manager_filter=None):
     objs = db.execute(
-        'SELECT id, name, parent_id, team_id, manager_id, doc_link FROM objectives'
+        'SELECT id, name, parent_id, team_id, manager_id, doc_link, position FROM objectives'
     ).fetchall()
     krs = db.execute('SELECT * FROM key_results').fetchall()
     teams = {t['id']: t['name'] for t in db.execute('SELECT * FROM teams').fetchall()}
@@ -22,17 +30,18 @@ def build_tree(db, team_filter=None, manager_filter=None):
             obj_dict[obj_id]['keyresults'].append(kr)
 
     if team_filter or manager_filter:
-        return _build_filtered_tree(obj_dict, krs, team_filter, manager_filter)
+        return _sort_children(_build_filtered_tree(obj_dict, krs, team_filter, manager_filter))
 
     for oid, obj in obj_dict.items():
         pid = obj.get('parent_id')
         if pid and pid in obj_dict:
             obj_dict[pid]['children'].append(obj)
 
-    return [
+    roots = [
         obj for oid, obj in obj_dict.items()
         if not obj.get('parent_id') or obj['parent_id'] not in obj_dict
     ]
+    return _sort_children(roots)
 
 
 def _build_filtered_tree(obj_dict, krs, team_filter, manager_filter):

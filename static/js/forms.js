@@ -1,8 +1,14 @@
 async function fillSelects() {
     const [teams, managers, objectives] = await Promise.all([loadTeams(), loadManagers(), loadObjectivesFlat()]);
     const parentSelect = document.getElementById('objParent');
+    const numbered = buildNumberedTree(objectives);
     parentSelect.innerHTML = '<option value="">-- None (Root) --</option>';
-    objectives.forEach(o => { parentSelect.innerHTML += `<option value="${o.id}">${o.name}</option>`; });
+    numbered.forEach(o => {
+        const depth = o.displayCode.split('.').length - 1;
+        const indent = '\u00A0\u00A0'.repeat(depth);
+        const rootTag = depth === 0 ? '[Root] ' : '';
+        parentSelect.innerHTML += `<option value="${o.id}">${indent}${rootTag}${o.displayCode}\u00A0\u00A0${o.name}</option>`;
+    });
     document.getElementById('objTeam').innerHTML = '<option value="">-- Not selected --</option>' + teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
     document.getElementById('objManager').innerHTML = '<option value="">-- Not selected --</option>' + managers.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
     document.getElementById('objDocLink').value = '';

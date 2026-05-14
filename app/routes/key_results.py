@@ -23,6 +23,16 @@ def add_keyresult(obj_id):
     return jsonify(kr), 201
 
 
+@key_results_bp.route('/api/keyresults/reorder', methods=['PUT'])
+@login_required
+@role_required('edit', 'admin')
+def reorder_keyresults():
+    db = get_db()
+    items = request.json.get('items', [])
+    kr_model.reorder(db, items)
+    return jsonify({"status": "ok"})
+
+
 @key_results_bp.route('/api/keyresults/<kr_id>', methods=['PUT'])
 @login_required
 @role_required('edit', 'admin')
