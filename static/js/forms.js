@@ -114,17 +114,30 @@ async function editKR(krId) {
 }
 
 function showKRDetail(kr, krNumber) {
-    const pct = Math.round(calculateKRProgress(kr));
+    const rawPct = calculateKRProgress(kr);
+    const pct = rawPct === -1 ? -1 : Math.round(rawPct);
     document.getElementById('krDetailLabel').textContent = krNumber + ': ' + kr.name;
     const bar = document.getElementById('krDetailProgressBar');
-    bar.style.width = pct + '%';
-    bar.textContent = pct + '%';
+    if (pct === -1) {
+        bar.style.width = '100%';
+        bar.textContent = 'N/A';
+        bar.className = 'progress-bar progress-bar-empty';
+    } else {
+        bar.style.width = pct + '%';
+        bar.textContent = pct + '%';
+        bar.className = 'progress-bar';
+    }
     document.getElementById('krDetailInitial').textContent = kr.initial_value ?? 0;
     document.getElementById('krDetailCurrent').textContent = kr.current_value;
-    document.getElementById('krDetailTarget').textContent = (kr.target_value + ' ' + kr.unit).trim();
-    document.getElementById('krDetailSource').textContent = kr.source === 'api' ? 'External API' : 'Manual edit';
+    if (pct === -1) {
+        document.getElementById('krDetailTarget').textContent = '—';
+        document.getElementById('krDetailSource').textContent = '—';
+    } else {
+        document.getElementById('krDetailTarget').textContent = (kr.target_value + ' ' + kr.unit).trim();
+        document.getElementById('krDetailSource').textContent = kr.source === 'api' ? 'External API' : 'Manual edit';
+    }
     let lastUpdated = '—';
-    if (kr.last_updated) {
+    if (kr.last_updated && pct !== -1) {
         const d = new Date(kr.last_updated + 'Z');
         lastUpdated = isNaN(d) ? '—' : d.toLocaleString();
     }

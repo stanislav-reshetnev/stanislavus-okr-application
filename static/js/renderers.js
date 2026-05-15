@@ -103,7 +103,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 const krNumber = `KR${objNumber}.${(kr.position ?? 0) + 1}`;
                 const pct = calculateKRProgress(kr);
                 let krClass = '';
-                if (kr.target_value > 0 || kr.initial_value > 0) {
+                if ((kr.target_value > 0 || kr.initial_value > 0) && pct >= 0) {
                     krClass = pct >= 100 ? 'kr-green' : 'kr-yellow';
                 }
                 let lastUpdated = '—';
@@ -112,8 +112,10 @@ function renderTree(nodes, parentElement, isRoot = false) {
                     lastUpdated = isNaN(d) ? '—' : d.toLocaleString();
                 }
                 const source = kr.source === 'api' ? 'external API' : 'manual edit';
-                const progressTitle = `Progress: ${Math.round(pct)}%\nInitial: ${kr.initial_value || 0}\nCurrent: ${kr.current_value}\nTarget: ${kr.target_value} ${kr.unit}\nValue last updated: ${lastUpdated}\nSource: ${source}`;
-                const pctClass = pct >= 70 ? 'progress-bar-high' : pct >= 25 ? 'progress-bar-mid' : 'progress-bar-low';
+                const progressTitle = pct === -1
+                    ? 'Progress: N/A (not configured)\nInitial: 0\nCurrent: 0\nTarget: 0\nValue last updated: —\nSource: —'
+                    : `Progress: ${Math.round(pct)}%\nInitial: ${kr.initial_value || 0}\nCurrent: ${kr.current_value}\nTarget: ${kr.target_value} ${kr.unit}\nValue last updated: ${lastUpdated}\nSource: ${source}`;
+                const pctClass = pct === -1 ? 'progress-bar-empty' : pct >= 70 ? 'progress-bar-high' : pct >= 25 ? 'progress-bar-mid' : 'progress-bar-low';
                 const krRow = document.createElement('div');
                 krRow.className = 'kr-row ' + krClass;
                 krRow.dataset.krId = kr.id;
@@ -128,7 +130,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 const krHandleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
                 krRow.innerHTML = `
                     ${krHandleHtml}📊 <strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${kr.name}</strong> (${kr.current_value} / ${kr.target_value} ${kr.unit})
-                    <div class="progress" title="${progressTitle.replace(/"/g, '&quot;')}"><div class="progress-bar ${pctClass}" style="width:${pct}%">${Math.round(pct)}%</div></div>${robotIcon}`;
+                    <div class="progress" title="${progressTitle.replace(/"/g, '&quot;')}"><div class="progress-bar ${pctClass}" style="width:${pct === -1 ? 100 : pct}%">${pct === -1 ? 'N/A' : Math.round(pct) + '%'}</div></div>${robotIcon}`;
 
                 // KR drag handle events
                 const krHandle = krRow.querySelector('.drag-handle');

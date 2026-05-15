@@ -96,6 +96,7 @@ function calculateKRProgress(kr) {
     const init = parseFloat(kr.initial_value) || 0;
     const curr = parseFloat(kr.current_value) || 0;
     const tgt = parseFloat(kr.target_value) || 0;
+    if (init === 0 && tgt === 0) return -1;
     if (init === tgt) return 100;
     if (tgt > init) {
         const progress = ((curr - init) / (tgt - init)) * 100;

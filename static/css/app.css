@@ -617,6 +617,10 @@ body:not(.edit-mode) .kr-name { cursor: pointer; }
 .progress-bar-high {
     background: linear-gradient(135deg, #10b981, #059669);
 }
+.progress-bar-empty {
+    background: #e2e8f0;
+    color: #94a3b8;
+}
 
 /* ========== Node Color States ========== */
 /* Hierarchy mode colors */
