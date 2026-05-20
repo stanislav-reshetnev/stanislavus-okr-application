@@ -2,7 +2,7 @@
 
 An OKR (Objectives and Key Results) management application with a hierarchical tree view and interactive graph mode.
 
-Built with Flask + SQLite + Bootstrap 5, served via Docker Compose (gunicorn + nginx). Features user authentication with role-based access control.
+Built with Flask + SQLite + Bootstrap 5, served via Docker Compose (uvicorn + nginx). Features user authentication with role-based access control.
 
 ## Features
 
@@ -44,9 +44,10 @@ stanislavus-okr-application/
 │   ├── config.py         # configuration (DB path, SECRET_KEY, etc.)
 │   ├── database.py       # SQLite connection, schema, migrations
 │   ├── auth_utils.py     # role_required decorator
-│   ├── models/           # objective, key_result, team, manager, user
-│   ├── routes/           # blueprints: objectives, key_results, teams, managers, frontend, auth
-│   └── services/         # tree builder
+│   ├── handlers/          # OpenAPI handler functions (auth, teams, managers, objectives, key_results)
+│   ├── models/            # objective, key_result, team, manager, user
+│   ├── routes/            # Flask page-route blueprints: frontend, auth
+│   └── services/          # tree builder
 ├── conf/nginx.conf       # nginx reverse proxy config
 ├── static/
 │   ├── css/app.css       # all custom styles
@@ -56,8 +57,8 @@ stanislavus-okr-application/
 │   ├── login.html        # login page
 │   └── setup.html        # first-run admin setup page
 ├── docker-compose.yml    # app + nginx services
-├── Dockerfile            # python:3.11-slim + gunicorn
-├── requirements.txt      # Flask, Flask-Login, gunicorn
+├── Dockerfile            # python:3.11-slim + uvicorn
+├── requirements.txt      # Flask, Flask-Login, connexion, uvicorn
 └── run.py                # entry point
 ```
 
@@ -83,7 +84,7 @@ Set `FLASK_ENV=development` for Flask debug mode (auto-reload disabled — resta
 
 | Service | Role | Image | Port |
 |---------|------|-------|------|
-| `app` | Flask app via gunicorn | custom (built) | 5000 (internal) |
+| `app` | Flask app via uvicorn | custom (built) | 5000 (internal) |
 | `nginx` | Reverse proxy, static files | nginx:alpine | 5000 → 80 |
 
 Data is persisted in `./data/okr.db` (bind mount at `/data`).
@@ -97,6 +98,7 @@ Data is persisted in `./data/okr.db` (bind mount at `/data`).
 | `APP_HOST` | `http://localhost:5000` | Public URL of the application (used in generated curl snippets) |
 | `SECRET_KEY` | auto-generated | Flask session signing key (set for production) |
 | `TZ` | `Etc/UTC` | Container timezone (e.g. `Europe/Moscow`, `America/New_York`) |
+| `CORS_ORIGINS` | `` (empty) | Comma-separated allowed origins for CORS, e.g. `http://localhost:3000,https://app.example.com`. When set, the server responds with `Access-Control-Allow-Origin` and related headers. |
 
 ### Usage examples
 
@@ -127,94 +129,25 @@ Three roles are supported:
 - Role assignment is managed exclusively by administrators.
 - Users can change their own password via the profile dropdown in the top-right corner.
 
-## API Endpoints
+## OpenAPI Specification (Manifest First)
 
-### Objectives
-| Method | Path | Action |
-|--------|------|--------|
-| GET | `/api/tree` | Get objective tree (optional `?team_id=X&manager_id=Y`) |
-| GET | `/api/objectives/flat` | Get flat list of all objectives |
-| POST | `/api/objectives` | Create objective |
-| PUT | `/api/objectives/<id>` | Update objective |
-| DELETE | `/api/objectives/<id>` | Delete objective with sub-objectives and KRs |
+The application follows a **Manifest First** approach: all `/api/*` endpoints are
+defined in the [openapi.json](openapi.json) file and auto-registered at startup by
+Connexion. The specification is also served at [/openapi.json](/openapi.json) for
+external consumption, and an interactive **Swagger UI** is available at
+[/api/docs](/api/docs) (requires login).
 
-### Key Results
-| Method | Path | Action |
-|--------|------|--------|
-| POST | `/api/objectives/<obj_id>/keyresults` | Add KR to objective |
-| PUT | `/api/keyresults/<id>` | Update KR fields. Only a current_value change refreshes last_updated and source. |
-| DELETE | `/api/keyresults/<id>` | Delete KR |
+Responses that return collections are wrapped in an object
+(e.g. `{"teams": [...]}` instead of a bare array).
 
-### Teams
-| Method | Path | Action |
-|--------|------|--------|
-| GET | `/api/teams` | List teams |
-| POST | `/api/teams` | Create team |
-| PUT | `/api/teams/<id>` | Rename team |
-| DELETE | `/api/teams/<id>` | Delete team |
+## External Integrations
 
-### Managers
-| Method | Path | Action |
-|--------|------|--------|
-| GET | `/api/managers` | List managers |
-| POST | `/api/managers` | Create manager |
-| PUT | `/api/managers/<id>` | Rename manager |
-| DELETE | `/api/managers/<id>` | Delete manager |
+Updating Key Results from external sources (monitoring dashboards, CI/CD pipelines, CRM systems, etc.) is one of the core features of the application — it keeps the tree always reflecting the current state.
 
-### Authentication
-
-All API endpoints support two authentication methods:
-- **Cookie** – browser-based, uses Flask-Login session
-- **Bearer token** – for automation, pass via `Authorization: Bearer <token>` header
-
-| Method | Path | Action | Access |
-|--------|------|--------|--------|
-| GET | `/login` | Login page | Public |
-| POST | `/login` | Authenticate | Public |
-| GET | `/logout` | Logout | Any authenticated |
-| GET | `/setup` | First-run admin setup page | No users exist |
-| POST | `/setup` | Create initial admin | No users exist |
-
-Every user has an auto-generated API token visible in the user management panel (admin only). Tokens can be regenerated at any time — the old token stops working immediately.
-
-### Users (admin only)
-| Method | Path | Action |
-|--------|------|--------|
-| GET | `/api/users` | List all users (includes `api_token`, `api_token_generated_at`) |
-| POST | `/api/users` | Create user (auto-generates API token) |
-| PUT | `/api/users/<id>` | Update user password/role, or pass `{"regenerate_token": true}` to issue a new API token |
-| DELETE | `/api/users/<id>` | Delete user |
-
-### Profile
-| Method | Path | Action | Access |
-|--------|------|--------|--------|
-| PUT | `/api/profile/password` | Change own password | Any authenticated |
-
-## Updating KR via External API
-
-All API endpoints support authentication via Bearer token. Use a dedicated service account (role `edit`) for automation — no session cookies needed:
-
-```bash
-# Update Key Result value using API token
-curl -X PUT \
-  -H 'Authorization: Bearer <api_token>' \
-  -H 'Content-Type: application/json' \
-  -d '{"current_value": 42, "source": "api"}' \
-  http://localhost:5000/api/keyresults/<kr_id>
-```
-
-### Update behavior
-
-The `PUT /api/keyresults/<id>` endpoint differentiates between metric updates and metadata changes:
-
-| Scenario | `last_updated` | `source` |
-|----------|---------------|----------|
-| `current_value` changes to a new value | ✅ Updated | ✅ Set to `source` value (default: `"manual"`) |
-| `current_value` sent with the same value | ❌ Unchanged | ❌ Unchanged |
-| Only metadata fields changed (`name`, `description`, `target_value`, `unit`, `doc_link`, `initial_value`) | ❌ Unchanged | ❌ Unchanged |
-
-This ensures that `last_updated` and `source` always reflect the **last actual metric measurement**, not cosmetic edits.
-
-To get an API token, log in as admin → Users → click 🔄 on the robot user to generate/regenerate a token, then click the truncated token to copy it. Create a robot user with role `edit` via the Add User form in the same panel.
+See **[INTEGRATIONS.md](INTEGRATIONS.md)** for:
+- How to obtain and use an API token
+- The complete OpenAPI specification reference
+- Key Result update behaviour (source tracking, lastUpdated)
+- Configuration and authentication details
 
 

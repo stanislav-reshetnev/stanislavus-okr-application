@@ -5,7 +5,19 @@ def get_all(db):
     rows = db.execute(
         'SELECT id, name, parent_id, team_id, manager_id, doc_link, position FROM objectives'
     ).fetchall()
-    return [dict(r) for r in rows]
+    return [_row_to_camel(dict(r)) for r in rows]
+
+
+def _row_to_camel(d):
+    return {
+        'id': d['id'],
+        'name': d['name'],
+        'parentId': d['parent_id'],
+        'teamId': d['team_id'],
+        'managerId': d['manager_id'],
+        'docLink': d['doc_link'],
+        'position': d['position'],
+    }
 
 
 def get_by_id(db, obj_id):
@@ -13,46 +25,70 @@ def get_by_id(db, obj_id):
         'SELECT id, name, parent_id, team_id, manager_id, doc_link, position FROM objectives WHERE id = ?',
         (obj_id,)
     ).fetchone()
-    return dict(row) if row else None
+    return _row_to_camel(dict(row)) if row else None
 
 
 def create(db, data):
-    parent_id = data.get('parent_id')
+    parent_id = data.get('parentId')
+    if not parent_id:
+        existing = db.execute(
+            'SELECT id FROM objectives WHERE parent_id IS NULL'
+        ).fetchone()
+        if existing:
+            raise ValueError('A company-wide objective already exists. Only one root objective is allowed.')
     max_pos = db.execute(
         'SELECT COALESCE(MAX(position), -1) FROM objectives WHERE parent_id IS ?',
         (parent_id,)
     ).fetchone()[0]
-    obj = {
-        "id": str(uuid.uuid4()),
-        "name": data['name'],
-        "parent_id": parent_id,
-        "team_id": data.get('team_id'),
-        "manager_id": data.get('manager_id'),
-        "doc_link": data.get('doc_link', ''),
-        "position": max_pos + 1
-    }
+    obj_id = str(uuid.uuid4())
+    team_id = data.get('teamId')
+    manager_id = data.get('managerId')
+    doc_link = data.get('docLink', '')
     db.execute(
         'INSERT INTO objectives (id, name, parent_id, team_id, manager_id, doc_link, position) '
         'VALUES (?,?,?,?,?,?,?)',
-        (obj['id'], obj['name'], obj['parent_id'],
-         obj['team_id'], obj['manager_id'], obj['doc_link'], obj['position'])
+        (obj_id, data['name'], parent_id,
+         team_id, manager_id, doc_link, max_pos + 1)
     )
     db.commit()
 
-    team = db.execute('SELECT name FROM teams WHERE id=?', (obj['team_id'],)).fetchone()
-    manager = db.execute('SELECT name FROM managers WHERE id=?', (obj['manager_id'],)).fetchone()
-    obj['team_name'] = team['name'] if team else None
-    obj['manager_name'] = manager['name'] if manager else None
-    return obj
+    team = db.execute('SELECT name FROM teams WHERE id=?', (team_id,)).fetchone()
+    manager = db.execute('SELECT name FROM managers WHERE id=?', (manager_id,)).fetchone()
+    return {
+        "id": obj_id,
+        "name": data['name'],
+        "parentId": parent_id,
+        "teamId": team_id,
+        "managerId": manager_id,
+        "docLink": doc_link,
+        "position": max_pos + 1,
+        "teamName": team['name'] if team else None,
+        "managerName": manager['name'] if manager else None,
+    }
 
 
 def update(db, obj_id, data):
+    if 'parentId' in data and not data['parentId']:
+        existing = db.execute(
+            'SELECT id FROM objectives WHERE parent_id IS NULL AND id != ?',
+            (obj_id,)
+        ).fetchone()
+        if existing:
+            raise ValueError('A company-wide objective already exists. Only one root objective is allowed.')
     fields = []
     values = []
-    for k in ['name', 'parent_id', 'team_id', 'manager_id', 'doc_link', 'position']:
-        if k in data:
-            fields.append(f"{k}=?")
-            values.append(data[k])
+    key_map = {
+        'name': 'name',
+        'parentId': 'parent_id',
+        'teamId': 'team_id',
+        'managerId': 'manager_id',
+        'docLink': 'doc_link',
+        'position': 'position',
+    }
+    for camel_key, db_key in key_map.items():
+        if camel_key in data:
+            fields.append(f"{db_key}=?")
+            values.append(data[camel_key])
     if not fields:
         return False
     values.append(obj_id)

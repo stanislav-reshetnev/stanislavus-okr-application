@@ -1,7 +1,8 @@
 async function refreshUserList() {
     const resp = await fetch('/api/users');
     if (!resp.ok) return;
-    const users = await resp.json();
+    const data = await resp.json();
+    const users = data.users;
     document.getElementById('userList').dataset.users = JSON.stringify(users);
     document.getElementById('userList').innerHTML = users.map(u => `
         <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -10,7 +11,7 @@ async function refreshUserList() {
                 <span class="badge ${u.role === 'admin' ? 'bg-danger' : u.role === 'edit' ? 'bg-warning text-dark' : 'bg-secondary'}">${u.role}</span>
                 <br>
                 <small class="text-muted">
-                    Token: ${u.api_token ? `<code class="user-token" style="cursor:pointer" onclick="copyToken('${u.id}')" title="Click to copy">${u.api_token.substring(0, 12)}...</code>` : '<em>not generated</em>'}
+                    Token: ${u.apiToken ? `<code class="user-token" style="cursor:pointer" onclick="copyToken('${u.id}')" title="Click to copy">${u.apiToken.substring(0, 12)}...</code>` : '<em>not generated</em>'}
                 </small>
             </span>
             <span>
@@ -62,15 +63,15 @@ async function regenerateToken(id) {
 function copyToken(id) {
     const users = JSON.parse(document.getElementById('userList').dataset.users || '[]');
     const user = users.find(u => u.id === id);
-    if (!user || !user.api_token) return;
+    if (!user || !user.apiToken) return;
     if (navigator.clipboard) {
-        navigator.clipboard.writeText(user.api_token).then(() => {
+        navigator.clipboard.writeText(user.apiToken).then(() => {
             alert('Token copied to clipboard');
         }).catch(() => {
-            prompt('Copy this token manually:', user.api_token);
+            prompt('Copy this token manually:', user.apiToken);
         });
     } else {
-        prompt('Copy this token manually:', user.api_token);
+        prompt('Copy this token manually:', user.apiToken);
     }
 }
 

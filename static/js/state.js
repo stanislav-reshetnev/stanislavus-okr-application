@@ -67,8 +67,8 @@ function buildNumberedTree(objectives) {
     });
     const roots = [];
     Object.values(objMap).forEach(o => {
-        if (o.parent_id && objMap[o.parent_id]) {
-            objMap[o.parent_id].children.push(o);
+        if (o.parentId && objMap[o.parentId]) {
+            objMap[o.parentId].children.push(o);
         } else {
             roots.push(o);
         }
@@ -93,9 +93,9 @@ function buildNumberedTree(objectives) {
 }
 
 function calculateKRProgress(kr) {
-    const init = parseFloat(kr.initial_value) || 0;
-    const curr = parseFloat(kr.current_value) || 0;
-    const tgt = parseFloat(kr.target_value) || 0;
+    const init = parseFloat(kr.initialValue) || 0;
+    const curr = parseFloat(kr.currentValue) || 0;
+    const tgt = parseFloat(kr.targetValue) || 0;
     if (init === 0 && tgt === 0) return -1;
     if (init === tgt) return 100;
     if (tgt > init) {

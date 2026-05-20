@@ -90,8 +90,8 @@ class User(UserMixin):
             'id': self.id,
             'email': self.email,
             'role': self.role,
-            'registered_at': self.registered_at,
-            'last_login_at': self.last_login_at,
-            'api_token': self.api_token,
-            'api_token_generated_at': self.api_token_generated_at,
+            'registeredAt': self.registered_at,
+            'lastLoginAt': self.last_login_at,
+            'apiToken': self.api_token,
+            'apiTokenGeneratedAt': self.api_token_generated_at,
         }

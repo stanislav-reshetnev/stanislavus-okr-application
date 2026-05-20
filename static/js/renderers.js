@@ -12,8 +12,8 @@ function renderTree(nodes, parentElement, isRoot = false) {
         li.addEventListener('drop', onObjectiveDrop);
 
         let objectiveColorClass = '';
-        if (node.keyresults && node.keyresults.length) {
-            const targetKRs = node.keyresults.filter(kr => kr.target_value > 0 || kr.initial_value > 0);
+        if (node.keyResults && node.keyResults.length) {
+            const targetKRs = node.keyResults.filter(kr => kr.targetValue > 0 || kr.initialValue > 0);
             if (targetKRs.length > 0) {
                 const allAchieved = targetKRs.every(kr => calculateKRProgress(kr) >= 100);
                 objectiveColorClass = allAchieved ? 'okr-green' : 'okr-yellow';
@@ -28,7 +28,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
         const objNumber = (node.position ?? 0) + 1;
         let nameHtml = '';
         const handleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
-        if (node.keyresults && node.keyresults.length) {
+        if (node.keyResults && node.keyResults.length) {
             nameHtml += `<span class="caret" title="${node.name}">`;
             nameHtml += `${handleHtml}<span class="objective-number">O${objNumber}:</span> <span class="objective-name" title="${node.name}">${node.name}</span></span>`;
         } else {
@@ -52,9 +52,9 @@ function renderTree(nodes, parentElement, isRoot = false) {
             });
         }
 
-        if (node.doc_link) {
+        if (node.docLink) {
             const linkIcon = document.createElement('a');
-            linkIcon.href = node.doc_link;
+            linkIcon.href = node.docLink;
             linkIcon.target = '_blank';
             linkIcon.rel = 'noopener noreferrer';
             linkIcon.className = 'ms-1 text-decoration-none';
@@ -63,16 +63,16 @@ function renderTree(nodes, parentElement, isRoot = false) {
             nodeDiv.appendChild(linkIcon);
         }
 
-        if (node.team_name) {
+        if (node.teamName) {
             const badge = document.createElement('span');
             badge.className = 'badge badge-team';
-            badge.textContent = '👥 ' + node.team_name;
+            badge.textContent = '👥 ' + node.teamName;
             nodeDiv.appendChild(badge);
         }
-        if (node.manager_name) {
+        if (node.managerName) {
             const badge = document.createElement('span');
             badge.className = 'badge badge-manager';
-            badge.textContent = '👤 ' + node.manager_name;
+            badge.textContent = '👤 ' + node.managerName;
             nodeDiv.appendChild(badge);
         }
 
@@ -96,25 +96,25 @@ function renderTree(nodes, parentElement, isRoot = false) {
 
         li.appendChild(nodeDiv);
 
-        if (node.keyresults && node.keyresults.length) {
+        if (node.keyResults && node.keyResults.length) {
             const krDiv = document.createElement('div');
             krDiv.className = 'kr-item';
-            node.keyresults.forEach((kr) => {
+            node.keyResults.forEach((kr) => {
                 const krNumber = `KR${objNumber}.${(kr.position ?? 0) + 1}`;
                 const pct = calculateKRProgress(kr);
                 let krClass = '';
-                if ((kr.target_value > 0 || kr.initial_value > 0) && pct >= 0) {
+                if ((kr.targetValue > 0 || kr.initialValue > 0) && pct >= 0) {
                     krClass = pct >= 100 ? 'kr-green' : 'kr-yellow';
                 }
                 let lastUpdated = '—';
-                if (kr.last_updated) {
-                    const d = new Date(kr.last_updated + 'Z');
+                if (kr.lastUpdated) {
+                    const d = new Date(kr.lastUpdated + 'Z');
                     lastUpdated = isNaN(d) ? '—' : d.toLocaleString();
                 }
                 const source = kr.source === 'api' ? 'external API' : 'manual edit';
                 const progressTitle = pct === -1
                     ? 'Progress: N/A (not configured)\nInitial: 0\nCurrent: 0\nTarget: 0\nValue last updated: —\nSource: —'
-                    : `Progress: ${Math.round(pct)}%\nInitial: ${kr.initial_value || 0}\nCurrent: ${kr.current_value}\nTarget: ${kr.target_value} ${kr.unit}\nValue last updated: ${lastUpdated}\nSource: ${source}`;
+                    : `Progress: ${Math.round(pct)}%\nInitial: ${kr.initialValue || 0}\nCurrent: ${kr.currentValue}\nTarget: ${kr.targetValue} ${kr.unit}\nValue last updated: ${lastUpdated}\nSource: ${source}`;
                 const pctClass = pct === -1 ? 'progress-bar-empty' : pct >= 70 ? 'progress-bar-high' : pct >= 25 ? 'progress-bar-mid' : 'progress-bar-low';
                 const krRow = document.createElement('div');
                 krRow.className = 'kr-row ' + krClass;
@@ -129,7 +129,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 const robotIcon = kr.source === 'api' ? '<span class="ms-1" title="Updated automatically via external API call">🤖</span>' : '';
                 const krHandleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
                 krRow.innerHTML = `
-                    ${krHandleHtml}📊 <strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${kr.name}</strong> (${kr.current_value} / ${kr.target_value} ${kr.unit})
+                    ${krHandleHtml}📊 <strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${kr.name}</strong> (${kr.currentValue} / ${kr.targetValue} ${kr.unit})
                     <div class="progress" title="${progressTitle.replace(/"/g, '&quot;')}"><div class="progress-bar ${pctClass}" style="width:${pct === -1 ? 100 : pct}%">${pct === -1 ? 'N/A' : Math.round(pct) + '%'}</div></div>${robotIcon}`;
 
                 // KR drag handle events
@@ -308,8 +308,8 @@ function renderTreeGraphic(nodes, container) {
         if (isRoot) box.classList.add('root-node');
 
         let krClass = '';
-        if (node.keyresults && node.keyresults.length) {
-            const targetKRs = node.keyresults.filter(kr => kr.target_value > 0 || kr.initial_value > 0);
+        if (node.keyResults && node.keyResults.length) {
+            const targetKRs = node.keyResults.filter(kr => kr.targetValue > 0 || kr.initialValue > 0);
             if (targetKRs.length > 0) {
                 const allAchieved = targetKRs.every(kr => calculateKRProgress(kr) >= 100);
                 krClass = allAchieved ? 'okr-green' : 'okr-yellow';
@@ -320,21 +320,21 @@ function renderTreeGraphic(nodes, container) {
         const objIndex = (node.position ?? 0) + 1;
         const objNumberSpan = `<span class="obj-number">O${objIndex}:</span>`;
         let boxHtml = `<div class="objective-title">${objNumberSpan} ${node.name}`;
-        if (node.doc_link) {
-            boxHtml += ` <a href="${node.doc_link}" target="_blank" rel="noopener noreferrer" class="text-decoration-none" title="Open docs">🔗</a>`;
+        if (node.docLink) {
+            boxHtml += ` <a href="${node.docLink}" target="_blank" rel="noopener noreferrer" class="text-decoration-none" title="Open docs">🔗</a>`;
         }
         boxHtml += `</div>`;
         const meta = [];
-        if (node.team_name) meta.push(`👥 ${node.team_name}`);
-        if (node.manager_name) meta.push(`👤 ${node.manager_name}`);
+        if (node.teamName) meta.push(`👥 ${node.teamName}`);
+        if (node.managerName) meta.push(`👤 ${node.managerName}`);
         if (meta.length) boxHtml += `<div class="objective-meta">${meta.join(' · ')}</div>`;
         box.innerHTML = boxHtml;
 
-        if (node.keyresults && node.keyresults.length) {
-            const krList = node.keyresults.map(kr => {
+        if (node.keyResults && node.keyResults.length) {
+            const krList = node.keyResults.map(kr => {
                 const pct = calculateKRProgress(kr);
                 const statusIcon = pct >= 100 ? '✅' : '📊';
-                return `<div class="mb-1">${statusIcon} <strong>${kr.name}</strong>: ${kr.current_value} → ${kr.target_value} ${kr.unit} (${Math.round(pct)}%)</div>`;
+                return `<div class="mb-1">${statusIcon} <strong>${kr.name}</strong>: ${kr.currentValue} → ${kr.targetValue} ${kr.unit} (${Math.round(pct)}%)</div>`;
             }).join('');
             box.setAttribute('data-bs-toggle', 'popover');
             box.setAttribute('data-bs-html', 'true');

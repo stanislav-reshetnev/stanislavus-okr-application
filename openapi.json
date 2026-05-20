@@ -1,0 +1,1909 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Stanislavus OKR Application API",
+    "version": "1.0.0",
+    "description": "REST API for managing Objectives and Key Results (OKRs). Supports hierarchical objectives with position-based ordering, key results with metric tracking, team/manager assignment, and user management with role-based access control."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Local development"
+    }
+  ],
+  "paths": {
+    "/api/users": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "List all users",
+        "description": "Returns all registered users. Admin only.",
+        "operationId": "getUsers",
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    }
+                  },
+                  "required": [
+                    "users"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Delete a user",
+        "description": "Permanently deletes a user. Cannot delete yourself. Admin only.",
+        "operationId": "deleteUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/profile/password": {
+      "put": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Change own password",
+        "description": "Change the authenticated user's password. Requires current password verification.",
+        "operationId": "changePassword",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordChangeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Current password is incorrect",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/teams": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "List all teams",
+        "description": "Returns all teams.",
+        "operationId": "getTeams",
+        "responses": {
+          "200": {
+            "description": "List of teams",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "teams": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Team"
+                      }
+                    }
+                  },
+                  "required": [
+                    "teams"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Create a team",
+        "description": "Creates a new team. Requires edit or admin role.",
+        "operationId": "createTeam",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NameRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Team created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Team"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/teams/{teamId}": {
+      "put": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Update a team",
+        "description": "Renames a team. Requires edit or admin role.",
+        "operationId": "updateTeam",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NameRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Team updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Delete a team",
+        "description": "Permanently deletes a team. Requires edit or admin role.",
+        "operationId": "deleteTeam",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Team deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/managers": {
+      "get": {
+        "tags": [
+          "Managers"
+        ],
+        "summary": "List all managers",
+        "description": "Returns all managers.",
+        "operationId": "getManagers",
+        "responses": {
+          "200": {
+            "description": "List of managers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "managers": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Manager"
+                      }
+                    }
+                  },
+                  "required": [
+                    "managers"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Managers"
+        ],
+        "summary": "Create a manager",
+        "description": "Creates a new manager. Requires edit or admin role.",
+        "operationId": "createManager",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NameRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Manager created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Manager"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/managers/{managerId}": {
+      "put": {
+        "tags": [
+          "Managers"
+        ],
+        "summary": "Update a manager",
+        "description": "Renames a manager. Requires edit or admin role.",
+        "operationId": "updateManager",
+        "parameters": [
+          {
+            "name": "managerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NameRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Manager updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Managers"
+        ],
+        "summary": "Delete a manager",
+        "description": "Permanently deletes a manager. Requires edit or admin role.",
+        "operationId": "deleteManager",
+        "parameters": [
+          {
+            "name": "managerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Manager deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/tree": {
+      "get": {
+        "tags": [
+          "Objectives"
+        ],
+        "summary": "Get objective tree",
+        "description": "Returns the full objective hierarchy tree with nested children and key results. Can be filtered by team or manager.",
+        "operationId": "getTree",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Filter by team ID"
+          },
+          {
+            "name": "managerId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Filter by manager ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Objective tree",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tree": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TreeObjective"
+                      }
+                    }
+                  },
+                  "required": [
+                    "tree"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/objectives/flat": {
+      "get": {
+        "tags": [
+          "Objectives"
+        ],
+        "summary": "Get flat list of objectives",
+        "description": "Returns all objectives as a flat (non-hierarchical) list.",
+        "operationId": "getObjectivesFlat",
+        "responses": {
+          "200": {
+            "description": "Flat list of objectives",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "objectives": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Objective"
+                      }
+                    }
+                  },
+                  "required": [
+                    "objectives"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/objectives": {
+      "post": {
+        "tags": [
+          "Objectives"
+        ],
+        "summary": "Create an objective",
+        "description": "Creates a new objective. Requires edit or admin role.",
+        "operationId": "createObjective",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateObjectiveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Objective created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectiveDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/objectives/reorder": {
+      "put": {
+        "tags": [
+          "Objectives"
+        ],
+        "summary": "Reorder objectives",
+        "description": "Batch-update positions for sibling objectives. Requires edit or admin role.",
+        "operationId": "reorderObjectives",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Objectives reordered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/objectives/{objectiveId}": {
+      "put": {
+        "tags": [
+          "Objectives"
+        ],
+        "summary": "Update an objective",
+        "description": "Updates one or more fields of an objective. Requires edit or admin role.",
+        "operationId": "updateObjective",
+        "parameters": [
+          {
+            "name": "objectiveId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateObjectiveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Objective updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Objectives"
+        ],
+        "summary": "Delete an objective (cascade)",
+        "description": "Permanently deletes an objective and all its children and key results. Requires edit or admin role.",
+        "operationId": "deleteObjective",
+        "parameters": [
+          {
+            "name": "objectiveId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Objective and descendants deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CascadeDeleteResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/objectives/{objectiveId}/keyresults": {
+      "post": {
+        "tags": [
+          "Key Results"
+        ],
+        "summary": "Create a key result",
+        "description": "Creates a new key result under an objective. Requires edit or admin role.",
+        "operationId": "createKeyResult",
+        "parameters": [
+          {
+            "name": "objectiveId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKeyResultRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Key result created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/keyresults/reorder": {
+      "put": {
+        "tags": [
+          "Key Results"
+        ],
+        "summary": "Reorder key results",
+        "description": "Batch-update positions for key results within an objective. Requires edit or admin role.",
+        "operationId": "reorderKeyResults",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Key results reordered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/keyresults/{keyResultId}": {
+      "put": {
+        "tags": [
+          "Key Results"
+        ],
+        "summary": "Update a key result",
+        "description": "Updates one or more fields of a key result. Requires edit or admin role.",
+        "operationId": "updateKeyResult",
+        "parameters": [
+          {
+            "name": "keyResultId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKeyResultRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Key result updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Key Results"
+        ],
+        "summary": "Delete a key result",
+        "description": "Permanently deletes a key result. Requires edit or admin role.",
+        "operationId": "deleteKeyResult",
+        "parameters": [
+          {
+            "name": "keyResultId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Key result deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Bearer token authentication. Generate a token via the user profile/update API or from the application settings.",
+        "x-bearerInfoFunc": "app.handlers.security.verify_bearer"
+      },
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "Flask-Login session cookie. Set after login via POST /login.",
+        "x-apikeyInfoFunc": "app.handlers.security.verify_session"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "StatusResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "updated",
+              "ok",
+              "deleted"
+            ],
+            "description": "Operation result status"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "DeletedResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "deleted"
+            ],
+            "description": "Confirmation of deletion"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CascadeDeleteResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "deleted"
+            ],
+            "description": "Confirmation of cascade deletion"
+          },
+          "removedIds": {
+            "type": "array",
+            "description": "IDs of all recursively deleted objectives",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "status",
+          "removedIds"
+        ]
+      },
+      "Team": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Primary key, UUID",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Team name",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "Manager": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Primary key, UUID",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Manager name",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Primary key, UUID",
+            "minLength": 1
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email / login"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "view",
+              "edit",
+              "admin"
+            ],
+            "description": "Access level"
+          },
+          "registeredAt": {
+            "type": "string",
+            "description": "Account creation timestamp"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Last successful login timestamp"
+          },
+          "apiToken": {
+            "type": "string",
+            "description": "Bearer token for API access",
+            "minLength": 1
+          },
+          "apiTokenGeneratedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Token generation/regeneration timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "registeredAt",
+          "lastLoginAt",
+          "apiToken",
+          "apiTokenGeneratedAt"
+        ]
+      },
+      "Objective": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Primary key, UUID",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Objective name",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Parent objective ID for hierarchy",
+            "minLength": 1
+          },
+          "teamId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Owning team ID",
+            "minLength": 1
+          },
+          "managerId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Responsible manager ID",
+            "minLength": 1
+          },
+          "docLink": {
+            "type": "string",
+            "description": "Link to documentation",
+            "maxLength": 2000
+          },
+          "position": {
+            "type": "integer",
+            "description": "Sort order among siblings (0-based)",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "parentId",
+          "teamId",
+          "managerId",
+          "docLink",
+          "position"
+        ]
+      },
+      "ObjectiveDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Primary key, UUID",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Objective name",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Parent objective ID for hierarchy",
+            "minLength": 1
+          },
+          "teamId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Owning team ID",
+            "minLength": 1
+          },
+          "managerId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Responsible manager ID",
+            "minLength": 1
+          },
+          "docLink": {
+            "type": "string",
+            "description": "Link to documentation",
+            "maxLength": 2000
+          },
+          "position": {
+            "type": "integer",
+            "description": "Sort order among siblings (0-based)",
+            "minimum": 0
+          },
+          "teamName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Team display name"
+          },
+          "managerName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Manager display name"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "parentId",
+          "teamId",
+          "managerId",
+          "docLink",
+          "position",
+          "teamName",
+          "managerName"
+        ]
+      },
+      "TreeObjective": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Primary key, UUID",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Objective name",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Parent objective ID for hierarchy",
+            "minLength": 1
+          },
+          "teamId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Owning team ID",
+            "minLength": 1
+          },
+          "managerId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Responsible manager ID",
+            "minLength": 1
+          },
+          "docLink": {
+            "type": "string",
+            "description": "Link to documentation",
+            "maxLength": 2000
+          },
+          "position": {
+            "type": "integer",
+            "description": "Sort order among siblings (0-based)",
+            "minimum": 0
+          },
+          "teamName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Team display name"
+          },
+          "managerName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Manager display name"
+          },
+          "children": {
+            "type": "array",
+            "description": "Child objectives",
+            "items": {
+              "$ref": "#/components/schemas/TreeObjective"
+            }
+          },
+          "keyResults": {
+            "type": "array",
+            "description": "Key results belonging to this objective",
+            "items": {
+              "$ref": "#/components/schemas/KeyResult"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "parentId",
+          "teamId",
+          "managerId",
+          "docLink",
+          "position",
+          "teamName",
+          "managerName",
+          "children",
+          "keyResults"
+        ]
+      },
+      "KeyResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Primary key, UUID",
+            "minLength": 1
+          },
+          "objectiveId": {
+            "type": "string",
+            "description": "Parent objective ID",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Key result name",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "targetValue": {
+            "type": "number",
+            "description": "Target value (goal)"
+          },
+          "currentValue": {
+            "type": "number",
+            "description": "Current measured value. Changing this refreshes lastUpdated and source."
+          },
+          "initialValue": {
+            "type": "number",
+            "description": "Starting value at creation"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit of measurement (%, pcs, $, etc.)",
+            "maxLength": 50
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "api"
+            ],
+            "description": "Source of the last metric update"
+          },
+          "docLink": {
+            "type": "string",
+            "description": "Link to metric source or documentation",
+            "maxLength": 2000
+          },
+          "description": {
+            "type": "string",
+            "description": "Internal notes about metric calculation logic",
+            "maxLength": 1000
+          },
+          "position": {
+            "type": "integer",
+            "description": "Sort order among siblings (0-based)",
+            "minimum": 0
+          },
+          "lastUpdated": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Timestamp of the last currentValue change"
+          }
+        },
+        "required": [
+          "id",
+          "objectiveId",
+          "name",
+          "targetValue",
+          "currentValue",
+          "initialValue",
+          "unit",
+          "source",
+          "docLink",
+          "description",
+          "position"
+        ]
+      },
+      "NameRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email / login",
+            "minLength": 5,
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "description": "User password",
+            "minLength": 5
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "view",
+              "edit",
+              "admin"
+            ],
+            "default": "view",
+            "description": "Access level"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "description": "New password",
+            "minLength": 5
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "view",
+              "edit",
+              "admin"
+            ],
+            "description": "New access level"
+          },
+          "regenerateToken": {
+            "type": "boolean",
+            "description": "Set to true to issue a new API token (old one stops working)"
+          }
+        }
+      },
+      "PasswordChangeRequest": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "description": "Current password for verification",
+            "minLength": 1
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "New password",
+            "minLength": 5
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "CreateObjectiveRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Objective name",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Parent objective ID for hierarchy",
+            "minLength": 1
+          },
+          "teamId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Owning team ID",
+            "minLength": 1
+          },
+          "managerId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Responsible manager ID",
+            "minLength": 1
+          },
+          "docLink": {
+            "type": "string",
+            "description": "Link to documentation",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateObjectiveRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Objective name",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Parent objective ID for hierarchy",
+            "minLength": 1
+          },
+          "teamId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Owning team ID",
+            "minLength": 1
+          },
+          "managerId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Responsible manager ID",
+            "minLength": 1
+          },
+          "docLink": {
+            "type": "string",
+            "description": "Link to documentation",
+            "maxLength": 2000
+          },
+          "position": {
+            "type": "integer",
+            "description": "Sort order among siblings (0-based)",
+            "minimum": 0
+          }
+        }
+      },
+      "CreateKeyResultRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Key result name",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "targetValue": {
+            "type": "number",
+            "default": 0,
+            "description": "Target value (goal)"
+          },
+          "currentValue": {
+            "type": "number",
+            "default": 0,
+            "description": "Current measured value"
+          },
+          "initialValue": {
+            "type": "number",
+            "default": 0,
+            "description": "Starting value at creation"
+          },
+          "unit": {
+            "type": "string",
+            "default": "",
+            "description": "Unit of measurement (%, pcs, $, etc.)",
+            "maxLength": 50
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "api"
+            ],
+            "default": "manual",
+            "description": "Source of the metric update"
+          },
+          "docLink": {
+            "type": "string",
+            "default": "",
+            "description": "Link to metric source or documentation",
+            "maxLength": 2000
+          },
+          "description": {
+            "type": "string",
+            "default": "",
+            "description": "Internal notes about metric calculation logic",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateKeyResultRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Key result name",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "targetValue": {
+            "type": "number",
+            "description": "Target value (goal)"
+          },
+          "currentValue": {
+            "type": "number",
+            "description": "Current measured value. Changing this refreshes lastUpdated and source."
+          },
+          "initialValue": {
+            "type": "number",
+            "description": "Starting value at creation"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit of measurement (%, pcs, $, etc.)",
+            "maxLength": 50
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "api"
+            ],
+            "description": "Source of the metric update"
+          },
+          "docLink": {
+            "type": "string",
+            "description": "Link to metric source or documentation",
+            "maxLength": 2000
+          },
+          "description": {
+            "type": "string",
+            "description": "Internal notes about metric calculation logic",
+            "maxLength": 1000
+          },
+          "position": {
+            "type": "integer",
+            "description": "Sort order among siblings (0-based)",
+            "minimum": 0
+          }
+        }
+      },
+      "ReorderItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Item ID",
+            "minLength": 1
+          },
+          "position": {
+            "type": "integer",
+            "description": "New sort position",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "position"
+        ]
+      },
+      "ReorderRequest": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "List of items with new positions",
+            "items": {
+              "$ref": "#/components/schemas/ReorderItem"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "items"
+        ]
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad request — missing or invalid fields",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Not authenticated — missing or invalid session/token",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Forbidden — insufficient role permissions",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Resource already exists (unique constraint violation)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

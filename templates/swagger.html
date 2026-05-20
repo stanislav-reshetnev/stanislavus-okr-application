@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company_name }} — API Docs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/app.css" rel="stylesheet">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+    <style>
+        body { background: var(--bg); }
+        .swagger-container { max-width: 1440px; margin: 0 auto; padding: 0 1.5rem 2rem; }
+        #swagger-ui { margin-top: 0.5rem; }
+        .swagger-ui .topbar { display: none; }
+        .swagger-ui .info { margin: 20px 0; }
+        .swagger-ui .info .title { color: var(--text); font-family: 'Inter', system-ui, sans-serif; }
+        .swagger-ui .info .description p { color: var(--text-secondary); }
+        .swagger-ui .scheme-container { background: var(--surface); box-shadow: var(--shadow-xs); border-radius: var(--radius); padding: 12px 20px; margin: 10px 0 20px; }
+        .swagger-ui .opblock-tag { font-family: 'Inter', system-ui, sans-serif; }
+        .swagger-ui .opblock .opblock-summary-description { color: var(--text-secondary); }
+        .swagger-ui .btn.authorize { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .swagger-ui .btn.authorize:hover { background: var(--primary-hover); color: #fff; }
+        .swagger-ui input[type=text] { border-radius: var(--radius-sm); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-header">
+            <div class="brand">
+                <img src="/static/favicon.svg" class="brand-icon" alt="OKR">
+                <h1 class="brand-title">{{ company_name }} — API Docs</h1>
+            </div>
+            <div class="header-actions">
+                <a href="/" class="btn btn-outline-secondary btn-sm">← Back to OKR Tree</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="swagger-container">
+        <div id="swagger-ui"></div>
+    </div>
+
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+        SwaggerUIBundle({
+            url: '/openapi.json',
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIBundle.SwaggerUIStandalonePreset
+            ],
+            layout: "BaseLayout",
+        });
+    </script>
+</body>
+</html>

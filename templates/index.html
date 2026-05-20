@@ -14,11 +14,12 @@
             <div class="brand">
                 <img src="/static/favicon.svg" class="brand-icon" alt="OKR">
                 <h1 class="brand-title">{{ company_name }} OKR Tree</h1>
+                <a href="/api/docs" class="btn btn-outline-secondary btn-sm ms-3">📖 API Docs</a>
             </div>
             <div class="header-actions">
-                <button class="btn btn-primary btn-sm" id="createObjBtn" data-bs-toggle="modal" data-bs-target="#objModal" onclick="prepareObjForm()">➕ Create Objective</button>
-                <button class="btn btn-outline-secondary btn-sm" id="teamsBtn" data-bs-toggle="modal" data-bs-target="#teamModal">👥 Teams</button>
-                <button class="btn btn-outline-secondary btn-sm" id="managersBtn" data-bs-toggle="modal" data-bs-target="#managerModal">👤 Managers</button>
+                <button class="btn btn-primary btn-sm d-none" id="createObjBtn" data-bs-toggle="modal" data-bs-target="#objModal" onclick="prepareObjForm()">➕ Create Objective</button>
+                <button class="btn btn-outline-secondary btn-sm d-none" id="teamsBtn" data-bs-toggle="modal" data-bs-target="#teamModal">👥 Teams</button>
+                <button class="btn btn-outline-secondary btn-sm d-none" id="managersBtn" data-bs-toggle="modal" data-bs-target="#managerModal">👤 Managers</button>
                 <button class="btn btn-outline-secondary btn-sm d-none" id="usersBtn" data-bs-toggle="modal" data-bs-target="#userModal">🔐 Users</button>
                 <label class="mode-switch" title="Edit Mode">
                     <input type="checkbox" id="editModeToggle">

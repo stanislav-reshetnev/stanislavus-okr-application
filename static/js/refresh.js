@@ -58,13 +58,13 @@ function filterTree(nodes, query) {
     const q = query.toLowerCase();
     return nodes.reduce((acc, node) => {
         const nameMatch = node.name.toLowerCase().includes(q);
-        const filteredKRs = nameMatch || !node.keyresults
-            ? node.keyresults
-            : node.keyresults.filter(kr => kr.name.toLowerCase().includes(q));
+        const filteredKRs = nameMatch || !node.keyResults
+            ? node.keyResults
+            : node.keyResults.filter(kr => kr.name.toLowerCase().includes(q));
         const krMatch = !nameMatch && filteredKRs && filteredKRs.length > 0;
         const filteredChildren = node.children ? filterTree(node.children, q) : [];
         if (nameMatch || krMatch || filteredChildren.length > 0) {
-            acc.push({ ...node, keyresults: filteredKRs, children: filteredChildren });
+            acc.push({ ...node, keyResults: filteredKRs, children: filteredChildren });
         }
         return acc;
     }, []);
@@ -113,17 +113,17 @@ async function refreshTree(opts = {}) {
         collapseKRBtn.style.display = 'block';
     }
 
-    treeContainer.innerHTML = '';
-
     if (viewMode === 'hierarchy') {
         if (graphResizeHandler) {
             window.removeEventListener('resize', graphResizeHandler);
             graphResizeHandler = null;
         }
         graphCurrentRoots = null;
-        renderTree(filtered, treeContainer, true);
+
+        const fragment = document.createDocumentFragment();
+        renderTree(filtered, fragment, true);
         expandedObjectives.forEach(id => {
-            const li = treeContainer.querySelector(`li[data-object-id="${id}"]`);
+            const li = fragment.querySelector(`li[data-object-id="${id}"]`);
             if (li) {
                 const caret = li.querySelector('.caret');
                 const krBlock = li.querySelector('.kr-item');
@@ -131,6 +131,9 @@ async function refreshTree(opts = {}) {
                 if (krBlock) krBlock.classList.add('active');
             }
         });
+        treeContainer.innerHTML = '';
+        treeContainer.appendChild(fragment);
+
         document.querySelectorAll('.caret').forEach(caret => {
             caret.addEventListener('click', function() {
                 this.classList.toggle('caret-down');
@@ -142,6 +145,7 @@ async function refreshTree(opts = {}) {
             });
         });
     } else if (viewMode === 'tree') {
+        treeContainer.innerHTML = '';
         renderTreeGraphic(filtered, treeContainer);
     }
 }

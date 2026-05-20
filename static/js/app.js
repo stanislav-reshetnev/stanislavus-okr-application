@@ -3,10 +3,10 @@ document.getElementById('objForm').addEventListener('submit', async (e) => {
     const id = document.getElementById('objId').value;
     const data = {
         name: document.getElementById('objName').value,
-        parent_id: document.getElementById('objParent').value || null,
-        team_id: document.getElementById('objTeam').value || null,
-        manager_id: document.getElementById('objManager').value || null,
-        doc_link: document.getElementById('objDocLink').value || ''
+        parentId: document.getElementById('objParent').value || null,
+        teamId: document.getElementById('objTeam').value || null,
+        managerId: document.getElementById('objManager').value || null,
+        docLink: document.getElementById('objDocLink').value || ''
     };
     if (id) {
         await fetch(`/api/objectives/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
@@ -22,11 +22,11 @@ document.getElementById('krForm').addEventListener('submit', async (e) => {
     const id = document.getElementById('krId').value;
     const data = {
         name: document.getElementById('krName').value,
-        initial_value: parseFloat(document.getElementById('krInitial').value) || 0,
-        current_value: parseFloat(document.getElementById('krCurrent').value) || 0,
-        target_value: parseFloat(document.getElementById('krTarget').value) || 0,
+        initialValue: parseFloat(document.getElementById('krInitial').value) || 0,
+        currentValue: parseFloat(document.getElementById('krCurrent').value) || 0,
+        targetValue: parseFloat(document.getElementById('krTarget').value) || 0,
         unit: document.getElementById('krUnit').value,
-        doc_link: document.getElementById('krDocLink').value || '',
+        docLink: document.getElementById('krDocLink').value || '',
         description: document.getElementById('krDescription').value || ''
     };
     if (id) {
@@ -98,9 +98,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (currentUser.role === 'view') {
         editModeToggle.closest('.mode-switch').style.display = 'none';
     }
-    if (currentUser.role === 'admin') {
-        usersBtn.classList.remove('d-none');
-    }
 
     const avatarBtn = document.getElementById('profileBtn');
 
@@ -127,6 +124,9 @@ window.addEventListener('DOMContentLoaded', async () => {
             createObjBtn.classList.remove('d-none');
             teamsBtn.classList.remove('d-none');
             managersBtn.classList.remove('d-none');
+            if (currentUser.role === 'admin') {
+                usersBtn.classList.remove('d-none');
+            }
             viewModeGroup.classList.add('d-none');
             body.classList.add('edit-mode');
             viewMode = 'hierarchy';
@@ -136,10 +136,11 @@ window.addEventListener('DOMContentLoaded', async () => {
             createObjBtn.classList.add('d-none');
             teamsBtn.classList.add('d-none');
             managersBtn.classList.add('d-none');
+            usersBtn.classList.add('d-none');
             viewModeGroup.classList.remove('d-none');
             body.classList.remove('edit-mode');
         }
-        refreshTree();
+        refreshTree({ skipSkeleton: true });
     });
 
     viewModeGroup.addEventListener('click', (e) => {
@@ -151,7 +152,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         viewMode = mode;
         viewModeGroup.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        refreshTree();
+        refreshTree({ skipSkeleton: true });
     });
 
     document.getElementById('teamForm').addEventListener('submit', async (e) => {

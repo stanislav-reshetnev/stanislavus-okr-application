@@ -1,7 +1,40 @@
+def _row_to_camel_obj(d):
+    return {
+        'id': d['id'],
+        'name': d['name'],
+        'parentId': d['parent_id'],
+        'teamId': d['team_id'],
+        'managerId': d['manager_id'],
+        'docLink': d['doc_link'],
+        'position': d['position'],
+        'children': [],
+        'keyResults': [],
+        'teamName': d.get('team_name', ''),
+        'managerName': d.get('manager_name', ''),
+    }
+
+
+def _row_to_camel_kr(d):
+    return {
+        'id': d['id'],
+        'objectiveId': d['objective_id'],
+        'name': d['name'],
+        'targetValue': d['target_value'],
+        'currentValue': d['current_value'],
+        'initialValue': d['initial_value'],
+        'unit': d['unit'],
+        'source': d['source'],
+        'docLink': d['doc_link'],
+        'description': d['description'],
+        'position': d['position'],
+        'lastUpdated': d.get('last_updated'),
+    }
+
+
 def _sort_children(tree):
     for obj in tree:
         obj['children'] = sorted(obj['children'], key=lambda x: x.get('position', 0))
-        obj['keyresults'] = sorted(obj['keyresults'], key=lambda x: x.get('position', 0))
+        obj['keyResults'] = sorted(obj['keyResults'], key=lambda x: x.get('position', 0))
         _sort_children(obj['children'])
     return tree
 
@@ -16,50 +49,48 @@ def build_tree(db, team_filter=None, manager_filter=None):
 
     obj_dict = {}
     for o in objs:
-        o = dict(o)
-        o['children'] = []
-        o['keyresults'] = []
-        o['team_name'] = teams.get(o['team_id'], '')
-        o['manager_name'] = managers.get(o['manager_id'], '')
-        obj_dict[o['id']] = o
+        o_dict = _row_to_camel_obj(dict(o))
+        o_dict['teamName'] = teams.get(o['team_id'], '')
+        o_dict['managerName'] = managers.get(o['manager_id'], '')
+        obj_dict[o_dict['id']] = o_dict
 
     for kr in krs:
-        kr = dict(kr)
-        obj_id = kr['objective_id']
+        kr_dict = _row_to_camel_kr(dict(kr))
+        obj_id = kr_dict['objectiveId']
         if obj_id in obj_dict:
-            obj_dict[obj_id]['keyresults'].append(kr)
+            obj_dict[obj_id]['keyResults'].append(kr_dict)
 
     if team_filter or manager_filter:
-        return _sort_children(_build_filtered_tree(obj_dict, krs, team_filter, manager_filter))
+        return _sort_children(_build_filtered_tree(obj_dict, team_filter, manager_filter))
 
     for oid, obj in obj_dict.items():
-        pid = obj.get('parent_id')
+        pid = obj.get('parentId')
         if pid and pid in obj_dict:
             obj_dict[pid]['children'].append(obj)
 
     roots = [
         obj for oid, obj in obj_dict.items()
-        if not obj.get('parent_id') or obj['parent_id'] not in obj_dict
+        if not obj.get('parentId') or obj['parentId'] not in obj_dict
     ]
     return _sort_children(roots)
 
 
-def _build_filtered_tree(obj_dict, krs, team_filter, manager_filter):
+def _build_filtered_tree(obj_dict, team_filter, manager_filter):
     parent_to_children = {}
     for oid, obj in obj_dict.items():
-        pid = obj.get('parent_id')
+        pid = obj.get('parentId')
         if pid:
             parent_to_children.setdefault(pid, []).append(oid)
 
     if team_filter:
         direct_matches = [
             oid for oid, obj in obj_dict.items()
-            if obj['team_id'] == team_filter
+            if obj['teamId'] == team_filter
         ]
     else:
         direct_matches = [
             oid for oid, obj in obj_dict.items()
-            if obj['manager_id'] == manager_filter
+            if obj['managerId'] == manager_filter
         ]
 
     allowed_ids = set()
@@ -68,7 +99,7 @@ def _build_filtered_tree(obj_dict, krs, team_filter, manager_filter):
         if oid in allowed_ids:
             return
         allowed_ids.add(oid)
-        parent = obj_dict[oid].get('parent_id')
+        parent = obj_dict[oid].get('parentId')
         if parent and parent in obj_dict:
             add_ancestors(parent)
 
@@ -86,20 +117,14 @@ def _build_filtered_tree(obj_dict, krs, team_filter, manager_filter):
     filtered = {oid: obj_dict[oid] for oid in allowed_ids}
     for oid, obj in filtered.items():
         obj['children'] = []
-        obj['keyresults'] = []
-
-    for kr in krs:
-        kr = dict(kr)
-        obj_id = kr['objective_id']
-        if obj_id in filtered:
-            filtered[obj_id]['keyresults'].append(kr)
+        obj['keyResults'] = []
 
     for oid, obj in filtered.items():
-        pid = obj.get('parent_id')
+        pid = obj.get('parentId')
         if pid and pid in filtered:
             filtered[pid]['children'].append(obj)
 
     return [
         obj for oid, obj in filtered.items()
-        if not obj.get('parent_id') or obj['parent_id'] not in filtered
+        if not obj.get('parentId') or obj['parentId'] not in filtered
     ]

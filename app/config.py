@@ -10,6 +10,11 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
     @classmethod
+    def get_cors_origins(cls):
+        raw = os.environ.get('CORS_ORIGINS', '')
+        return [o.strip() for o in raw.split(',') if o.strip()]
+
+    @classmethod
     def get_database_path(cls):
         return os.environ.get('OKR_DB_PATH', os.path.join(ROOT, 'data', 'okr.db'))
 

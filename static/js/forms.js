@@ -2,7 +2,10 @@ async function fillSelects() {
     const [teams, managers, objectives] = await Promise.all([loadTeams(), loadManagers(), loadObjectivesFlat()]);
     const parentSelect = document.getElementById('objParent');
     const numbered = buildNumberedTree(objectives);
-    parentSelect.innerHTML = '<option value="">-- None (Root) --</option>';
+    const hasRoot = objectives.some(o => !o.parentId);
+    const editing = !!document.getElementById('objId').value;
+    const rootDisabled = hasRoot && !editing;
+    parentSelect.innerHTML = `<option value="" ${rootDisabled ? 'disabled' : ''}>-- None (Root) --${rootDisabled ? ' (already exists)' : ''}</option>`;
     numbered.forEach(o => {
         const depth = o.displayCode.split('.').length - 1;
         const indent = '\u00A0\u00A0'.repeat(depth);
@@ -30,10 +33,10 @@ async function editObjective(id) {
     document.getElementById('objName').value = obj.name;
     document.getElementById('objModalLabel').textContent = 'Edit Objective';
     await fillSelects();
-    document.getElementById('objParent').value = obj.parent_id || '';
-    document.getElementById('objTeam').value = obj.team_id || '';
-    document.getElementById('objManager').value = obj.manager_id || '';
-    document.getElementById('objDocLink').value = obj.doc_link || '';
+    document.getElementById('objParent').value = obj.parentId || '';
+    document.getElementById('objTeam').value = obj.teamId || '';
+    document.getElementById('objManager').value = obj.managerId || '';
+    document.getElementById('objDocLink').value = obj.docLink || '';
     new bootstrap.Modal(document.getElementById('objModal')).show();
 }
 
@@ -67,8 +70,8 @@ async function editKR(krId) {
     let found = null;
     (function find(nodes) {
         for (let node of nodes) {
-            if (node.keyresults) {
-                found = node.keyresults.find(k => k.id === krId);
+            if (node.keyResults) {
+                found = node.keyResults.find(k => k.id === krId);
                 if (found) return;
             }
             if (node.children) find(node.children);
@@ -77,24 +80,23 @@ async function editKR(krId) {
     })(tree);
     if (!found) return;
     document.getElementById('krId').value = found.id;
-    document.getElementById('krObjectiveId').value = found.objective_id;
-    document.getElementById('krName').value = found.name;
-    document.getElementById('krInitial').value = found.initial_value || 0;
-    document.getElementById('krCurrent').value = found.current_value;
-    document.getElementById('krTarget').value = found.target_value;
+    document.getElementById('krObjectiveId').value = found.objectiveId;
+    document.getElementById('krInitial').value = found.initialValue || 0;
+    document.getElementById('krCurrent').value = found.currentValue;
+    document.getElementById('krTarget').value = found.targetValue;
     document.getElementById('krUnit').value = found.unit || '';
-    document.getElementById('krDocLink').value = found.doc_link || '';
+    document.getElementById('krDocLink').value = found.docLink || '';
     document.getElementById('krDescription').value = found.description || '';
 
     const apiWarning = document.getElementById('krApiWarning');
     if (apiWarning) {
-        if (found.source === 'api' && found.last_updated) {
-            const updated = new Date(found.last_updated.replace(' ', 'T') + 'Z');
+        if (found.source === 'api' && found.lastUpdated) {
+            const updated = new Date(found.lastUpdated.replace(' ', 'T') + 'Z');
             const now = new Date();
             const hoursAgo = (now - updated) / (1000 * 60 * 60);
             if (hoursAgo < 24) {
                 apiWarning.classList.remove('d-none');
-                apiWarning.title = 'Last API update: ' + found.last_updated;
+                apiWarning.title = 'Last API update: ' + found.lastUpdated;
             } else {
                 apiWarning.classList.add('d-none');
             }
@@ -106,7 +108,7 @@ async function editKR(krId) {
     const curl = `curl -X PUT \\
   -H 'Authorization: Bearer <API_TOKEN>' \\
   -H 'Content-Type: application/json' \\
-  -d '{"current_value": <VALUE>, "source": "api"}' \\
+  -d '{"currentValue": <VALUE>, "source": "api"}' \\
   ${appHost}/api/keyresults/${found.id}`;
     document.getElementById('krCurlSnippet').textContent = curl;
 
@@ -127,18 +129,18 @@ function showKRDetail(kr, krNumber) {
         bar.textContent = pct + '%';
         bar.className = 'progress-bar';
     }
-    document.getElementById('krDetailInitial').textContent = kr.initial_value ?? 0;
-    document.getElementById('krDetailCurrent').textContent = kr.current_value;
+    document.getElementById('krDetailInitial').textContent = kr.initialValue ?? 0;
+    document.getElementById('krDetailCurrent').textContent = kr.currentValue;
     if (pct === -1) {
         document.getElementById('krDetailTarget').textContent = '—';
         document.getElementById('krDetailSource').textContent = '—';
     } else {
-        document.getElementById('krDetailTarget').textContent = (kr.target_value + ' ' + kr.unit).trim();
+        document.getElementById('krDetailTarget').textContent = (kr.targetValue + ' ' + kr.unit).trim();
         document.getElementById('krDetailSource').textContent = kr.source === 'api' ? 'External API' : 'Manual edit';
     }
     let lastUpdated = '—';
-    if (kr.last_updated && pct !== -1) {
-        const d = new Date(kr.last_updated + 'Z');
+    if (kr.lastUpdated && pct !== -1) {
+        const d = new Date(kr.lastUpdated + 'Z');
         lastUpdated = isNaN(d) ? '—' : d.toLocaleString();
     }
     document.getElementById('krDetailLastUpdated').textContent = lastUpdated;
@@ -151,8 +153,8 @@ function showKRDetail(kr, krNumber) {
         descWrap.style.display = 'none';
     }
     const linkEl = document.getElementById('krDetailDocLink');
-    if (kr.doc_link) {
-        linkEl.href = kr.doc_link;
+    if (kr.docLink) {
+        linkEl.href = kr.docLink;
         linkEl.style.display = 'inline-flex';
     } else {
         linkEl.style.display = 'none';
@@ -181,3 +183,9 @@ async function deleteKR(krId) {
     await fetch(`/api/keyresults/${krId}`, { method: 'DELETE' });
     refreshTree();
 }
+
+document.getElementById('krDetailModal').addEventListener('hide.bs.modal', function () {
+    if (this.contains(document.activeElement)) {
+        document.body.focus();
+    }
+});
