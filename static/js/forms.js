@@ -58,6 +58,7 @@ async function addKR(objectiveId) {
     document.getElementById('krUnit').value = '';
     document.getElementById('krDocLink').value = '';
     document.getElementById('krDescription').value = '';
+    document.getElementById('krConfidence').value = 'medium';
     document.getElementById('krCurlSnippet').textContent = '';
     const addWarning = document.getElementById('krApiWarning');
     if (addWarning) addWarning.classList.add('d-none');
@@ -81,12 +82,14 @@ async function editKR(krId) {
     if (!found) return;
     document.getElementById('krId').value = found.id;
     document.getElementById('krObjectiveId').value = found.objectiveId;
+    document.getElementById('krName').value = found.name;
     document.getElementById('krInitial').value = found.initialValue || 0;
     document.getElementById('krCurrent').value = found.currentValue;
     document.getElementById('krTarget').value = found.targetValue;
     document.getElementById('krUnit').value = found.unit || '';
     document.getElementById('krDocLink').value = found.docLink || '';
     document.getElementById('krDescription').value = found.description || '';
+    document.getElementById('krConfidence').value = found.confidence || 'medium';
 
     const apiWarning = document.getElementById('krApiWarning');
     if (apiWarning) {
@@ -144,6 +147,11 @@ function showKRDetail(kr, krNumber) {
         lastUpdated = isNaN(d) ? '—' : d.toLocaleString();
     }
     document.getElementById('krDetailLastUpdated').textContent = lastUpdated;
+    const confEl = document.getElementById('krDetailConfidence');
+    const conf = kr.confidence || 'medium';
+    confEl.textContent = conf.charAt(0).toUpperCase() + conf.slice(1);
+    confEl.className = 'cs cs-' + conf;
+    confEl.title = 'Confidence Score';
     const descEl = document.getElementById('krDetailDescription');
     const descWrap = document.getElementById('krDetailDescriptionWrap');
     if (kr.description) {

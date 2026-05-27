@@ -186,6 +186,16 @@
                             <label class="form-label">Metric Link</label>
                             <input type="url" class="form-control" id="krDocLink" placeholder="https://...">
                         </div>
+                        <div class="row mb-3">
+                            <div class="col-4">
+                                <label class="form-label">Confidence</label>
+                                <select class="form-select" id="krConfidence">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                        </div>
                         <div id="krApiWarning" class="alert alert-warning py-2 mb-2 d-none" role="alert">
                             ⚠ Warning: This value is automatically updated via external API
                         </div>
@@ -218,6 +228,7 @@
                         <tr><td class="text-secondary">Current</td><td id="krDetailCurrent"></td></tr>
                         <tr><td class="text-secondary">Target</td><td id="krDetailTarget"></td></tr>
                         <tr><td class="text-secondary">Source</td><td id="krDetailSource"></td></tr>
+                        <tr><td class="text-secondary">Confidence</td><td><span id="krDetailConfidence"></span></td></tr>
                         <tr><td class="text-secondary">Value last updated</td><td><span id="krDetailLastUpdated"></span> <a href="" target="_blank" rel="noopener noreferrer" id="krDetailDocLink" class="ms-2" style="display:none">🔗 Metric information</a></td></tr>
                     </table>
                     <hr>

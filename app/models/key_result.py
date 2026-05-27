@@ -20,6 +20,7 @@ def _row_to_camel(d):
         'description': d['description'],
         'position': d['position'],
         'lastUpdated': d.get('last_updated'),
+        'confidence': d.get('confidence', 'medium'),
     }
 
 
@@ -43,14 +44,15 @@ def create(db, objective_id, data):
     source = data.get('source', 'manual')
     doc_link = data.get('docLink', '')
     description = data.get('description', '')
+    confidence = data.get('confidence', 'medium')
 
     db.execute(
         'INSERT INTO key_results '
-        '(id, objective_id, name, target_value, current_value, initial_value, unit, source, doc_link, description, position, last_updated) '
-        'VALUES (?,?,?,?,?,?,?,?,?,?,?, datetime("now"))',
+        '(id, objective_id, name, target_value, current_value, initial_value, unit, source, doc_link, description, position, confidence, last_updated) '
+        'VALUES (?,?,?,?,?,?,?,?,?,?,?,?, datetime("now"))',
         (kr_id, objective_id, data['name'], target_value,
          current_value, initial_value, unit, source,
-         doc_link, description, max_pos + 1)
+         doc_link, description, max_pos + 1, confidence)
     )
     db.commit()
     last_updated = db.execute(
@@ -69,6 +71,7 @@ def create(db, objective_id, data):
         'description': description,
         'position': max_pos + 1,
         'lastUpdated': last_updated,
+        'confidence': confidence,
     }
 
 
@@ -83,6 +86,7 @@ def update(db, kr_id, data):
         'docLink': 'doc_link',
         'description': 'description',
         'position': 'position',
+        'confidence': 'confidence',
     }
     for camel_key, db_key in key_map.items():
         if camel_key in data:

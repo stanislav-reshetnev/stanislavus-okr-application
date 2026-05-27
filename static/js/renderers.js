@@ -128,9 +128,11 @@ function renderTree(nodes, parentElement, isRoot = false) {
 
                 const robotIcon = kr.source === 'api' ? '<span class="ms-1" title="Updated automatically via external API call">🤖</span>' : '';
                 const krHandleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
+                const confVal = kr.confidence || 'medium';
+                const confLabel = confVal === 'medium' ? 'Med' : confVal.charAt(0).toUpperCase() + confVal.slice(1);
                 krRow.innerHTML = `
                     ${krHandleHtml}📊 <strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${kr.name}</strong> (${kr.currentValue} / ${kr.targetValue} ${kr.unit})
-                    <div class="progress" title="${progressTitle.replace(/"/g, '&quot;')}"><div class="progress-bar ${pctClass}" style="width:${pct === -1 ? 100 : pct}%">${pct === -1 ? 'N/A' : Math.round(pct) + '%'}</div></div>${robotIcon}`;
+                    <div class="progress" title="${progressTitle.replace(/"/g, '&quot;')}"><div class="progress-bar ${pctClass}" style="width:${pct === -1 ? 100 : pct}%">${pct === -1 ? 'N/A' : Math.round(pct) + '%'}</div></div>${robotIcon}<span class="cs cs-${confVal}" title="Confidence Score">${confLabel}</span>`;
 
                 // KR drag handle events
                 const krHandle = krRow.querySelector('.drag-handle');

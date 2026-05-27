@@ -28,6 +28,7 @@ def _row_to_camel_kr(d):
         'description': d['description'],
         'position': d['position'],
         'lastUpdated': d.get('last_updated'),
+        'confidence': d.get('confidence', 'medium'),
     }
 
 

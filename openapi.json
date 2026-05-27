@@ -1531,6 +1531,11 @@
             "format": "date-time",
             "nullable": true,
             "description": "Timestamp of the last currentValue change"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "Confidence score for the key result"
           }
         },
         "required": [
@@ -1544,7 +1549,8 @@
           "source",
           "docLink",
           "description",
-          "position"
+          "position",
+          "confidence"
         ]
       },
       "NameRequest": {
@@ -1760,6 +1766,12 @@
             "default": "",
             "description": "Internal notes about metric calculation logic",
             "maxLength": 1000
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "default": "medium",
+            "description": "Confidence score for the key result"
           }
         },
         "required": [
@@ -1814,6 +1826,11 @@
             "type": "integer",
             "description": "Sort order among siblings (0-based)",
             "minimum": 0
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "Confidence score for the key result"
           }
         }
       },

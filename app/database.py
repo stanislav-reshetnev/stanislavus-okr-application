@@ -102,6 +102,10 @@ def init_db(app):
             db.execute('ALTER TABLE key_results ADD COLUMN description TEXT DEFAULT ""')
         except sqlite3.OperationalError:
             pass
+        try:
+            db.execute('ALTER TABLE key_results ADD COLUMN confidence TEXT DEFAULT "medium"')
+        except sqlite3.OperationalError:
+            pass
 
         needs_backfill = False
 
@@ -167,6 +171,7 @@ def init_db(app):
                 'description': 'Internal notes about metric calculation logic',
                 'position': 'Sort order among siblings (0-based)',
                 'last_updated': 'Timestamp of the last current_value change',
+                'confidence': 'Confidence score: low, medium, or high',
             },
             'users': {
                 'id': 'Primary key, UUID',
