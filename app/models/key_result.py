@@ -91,10 +91,7 @@ def update(db, kr_id, data):
 
     metric_refresh = False
     if 'currentValue' in data:
-        old = db.execute(
-            'SELECT current_value FROM key_results WHERE id=?', (kr_id,)
-        ).fetchone()
-        metric_refresh = old and old['current_value'] != data['currentValue']
+        metric_refresh = True
         fields.append('current_value=?')
         values.append(data['currentValue'])
 
@@ -104,10 +101,16 @@ def update(db, kr_id, data):
     db.execute(f"UPDATE key_results SET {', '.join(fields)} WHERE id=?", values)
 
     if metric_refresh:
-        db.execute(
-            'UPDATE key_results SET last_updated = datetime("now"), source = ? WHERE id=?',
-            (data.get('source', 'manual'), kr_id)
-        )
+        if 'source' in data:
+            db.execute(
+                'UPDATE key_results SET last_updated = datetime("now"), source = ? WHERE id=?',
+                (data['source'], kr_id)
+            )
+        else:
+            db.execute(
+                'UPDATE key_results SET last_updated = datetime("now") WHERE id=?',
+                (kr_id,)
+            )
     db.commit()
     return True
 

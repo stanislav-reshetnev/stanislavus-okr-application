@@ -34,7 +34,7 @@ curl http://localhost:5000/api/objectives/flat \
 | **Manager** | A person responsible for objectives. Objectives can be filtered by manager. |
 | **Tree** | The hierarchical view of objectives with nested children and their key results. |
 
-Key Results track progress via `currentValue` / `targetValue` / `initialValue` and are automatically assigned a `source` ("manual", "api", or "import") and `lastUpdated` timestamp when their value changes.
+Key Results track progress via `currentValue` / `targetValue` / `initialValue`. Whenever `currentValue` is submitted in an update request, the `lastUpdated` timestamp is refreshed automatically. The `source` field is updated only when explicitly provided in the request body.
 
 ## Updating Key Results from External Systems
 
@@ -52,11 +52,10 @@ curl -X PUT \
 
 | Scenario | `lastUpdated` | `source` |
 |----------|---------------|----------|
-| `currentValue` changes to a new value | ✅ Updated | ✅ Set to `source` value (default: `"manual"`) |
-| `currentValue` sent with the same value | ❌ Unchanged | ❌ Unchanged |
+| `currentValue` submitted (value changed or not) | ✅ Updated | ✅ Set to provided `source` value; preserved if omitted |
 | Only metadata fields changed (`name`, `description`, `targetValue`, `unit`, `docLink`, `initialValue`) | ❌ Unchanged | ❌ Unchanged |
 
-This ensures that `lastUpdated` and `source` always reflect the **last actual metric measurement**, not cosmetic edits. KRs updated through the API are marked with a 🤖 robot icon in the UI.
+This ensures that `lastUpdated` always reflects the **last time the metric value was reported**, not cosmetic edits. To mark an update as API-sourced, include `"source": "api"` in the request body. KRs updated through the API are marked with a 🤖 robot icon in the UI.
 
 ## Configuration
 
