@@ -63,8 +63,10 @@ function filterTree(nodes, query) {
             : node.keyResults.filter(kr => kr.name.toLowerCase().includes(q));
         const krMatch = !nameMatch && filteredKRs && filteredKRs.length > 0;
         const filteredChildren = node.children ? filterTree(node.children, q) : [];
-        if (nameMatch || krMatch || filteredChildren.length > 0) {
-            acc.push({ ...node, keyResults: filteredKRs, children: filteredChildren });
+        const childrenMatch = filteredChildren.length > 0;
+        if (nameMatch || krMatch || childrenMatch) {
+            const resultKRs = (nameMatch || krMatch) ? filteredKRs : node.keyResults;
+            acc.push({ ...node, keyResults: resultKRs, children: filteredChildren });
         }
         return acc;
     }, []);

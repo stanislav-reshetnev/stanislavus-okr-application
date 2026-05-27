@@ -117,7 +117,6 @@ def _build_filtered_tree(obj_dict, team_filter, manager_filter):
     filtered = {oid: obj_dict[oid] for oid in allowed_ids}
     for oid, obj in filtered.items():
         obj['children'] = []
-        obj['keyResults'] = []
 
     for oid, obj in filtered.items():
         pid = obj.get('parentId')
