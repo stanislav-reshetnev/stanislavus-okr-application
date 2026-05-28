@@ -116,6 +116,7 @@ def delete_cascade(db, obj_id):
     all_ids = get_all_children_ids(obj_id)
     for oid in all_ids:
         db.execute('DELETE FROM key_results WHERE objective_id = ?', (oid,))
+        db.execute('DELETE FROM initiatives WHERE objective_id = ?', (oid,))
     for oid in all_ids:
         db.execute('DELETE FROM objectives WHERE id = ?', (oid,))
     db.commit()

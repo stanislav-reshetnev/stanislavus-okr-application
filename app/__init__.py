@@ -116,6 +116,10 @@ def create_app():
         'reorderKeyResults': 'app.handlers.key_results',
         'updateKeyResult': 'app.handlers.key_results',
         'deleteKeyResult': 'app.handlers.key_results',
+        'createInitiative': 'app.handlers.initiatives',
+        'reorderInitiatives': 'app.handlers.initiatives',
+        'updateInitiative': 'app.handlers.initiatives',
+        'deleteInitiative': 'app.handlers.initiatives',
     }
 
     def _resolve_fn(operation_id):

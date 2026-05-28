@@ -146,6 +146,46 @@
         </div>
     </div>
 
+    <div class="modal fade" id="initiativeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Initiative</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="initiativeForm">
+                        <input type="hidden" id="initiativeId">
+                        <input type="hidden" id="initiativeObjectiveId">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" id="initiativeName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">What are we doing?</label>
+                            <textarea class="form-control" id="initiativeWhat" rows="2" placeholder="Description of the initiative..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Impact on Objective</label>
+                            <textarea class="form-control" id="initiativeImpact" rows="2" placeholder="How will this impact the objective?"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Doc Link</label>
+                            <input type="url" class="form-control" id="initiativeDocLink" placeholder="https://...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="initiativeStatus">
+                                <option value="backlog">Backlog</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="krModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -235,6 +275,28 @@
                     <div id="krDetailDescriptionWrap">
                         <strong>Description</strong>
                         <p id="krDetailDescription" class="mt-1 mb-0 text-muted" style="font-size:0.9rem;white-space:pre-wrap"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="initiativeDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="initDetailLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-sm table-borderless mb-3">
+                        <tr><td class="text-secondary">Objective</td><td><span id="initDetailObjective"></span></td></tr>
+                        <tr><td class="text-secondary">Status</td><td><span id="initDetailStatus"></span></td></tr>
+                        <tr><td class="text-secondary">What</td><td id="initDetailWhat" style="white-space:pre-wrap"></td></tr>
+                        <tr><td class="text-secondary">Impact</td><td id="initDetailImpact" style="white-space:pre-wrap"></td></tr>
+                    </table>
+                    <div id="initDetailDocLinkWrap">
+                        <a href="" target="_blank" rel="noopener noreferrer" id="initDetailDocLink" class="btn btn-outline-primary btn-sm" style="display:none">🔗 Open documentation</a>
                     </div>
                 </div>
             </div>

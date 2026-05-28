@@ -170,6 +170,28 @@ function showKRDetail(kr, krNumber) {
     new bootstrap.Modal(document.getElementById('krDetailModal')).show();
 }
 
+function showInitiativeDetail(init, initNumber, objCode, objName) {
+    document.getElementById('initDetailLabel').textContent = initNumber + ': ' + init.name;
+    document.getElementById('initDetailObjective').textContent = 'O' + objCode + ' — ' + (objName || '');
+    const statusMap = { backlog: 'Backlog', in_progress: 'In Progress', completed: 'Completed', cancelled: 'Cancelled' };
+    const statusVal = init.status || 'backlog';
+    const statusEl = document.getElementById('initDetailStatus');
+    statusEl.textContent = statusMap[statusVal] || statusVal;
+    statusEl.className = 'status status-' + statusVal;
+    const whatEl = document.getElementById('initDetailWhat');
+    const impactEl = document.getElementById('initDetailImpact');
+    whatEl.textContent = init.what || '—';
+    impactEl.textContent = init.impact || '—';
+    const linkEl = document.getElementById('initDetailDocLink');
+    if (init.docLink) {
+        linkEl.href = init.docLink;
+        linkEl.style.display = 'inline-flex';
+    } else {
+        linkEl.style.display = 'none';
+    }
+    new bootstrap.Modal(document.getElementById('initiativeDetailModal')).show();
+}
+
 function copyCurlCode() {
     const el = document.getElementById('krCurlSnippet');
     const text = el.textContent;
@@ -183,6 +205,50 @@ function copyCurlCode() {
     } else {
         prompt('Copy this code manually:', text);
     }
+}
+
+async function addInitiative(objectiveId) {
+    if (!editMode) return;
+    document.getElementById('initiativeId').value = '';
+    document.getElementById('initiativeObjectiveId').value = objectiveId;
+    document.getElementById('initiativeName').value = '';
+    document.getElementById('initiativeWhat').value = '';
+    document.getElementById('initiativeImpact').value = '';
+    document.getElementById('initiativeDocLink').value = '';
+    document.getElementById('initiativeStatus').value = 'backlog';
+    new bootstrap.Modal(document.getElementById('initiativeModal')).show();
+}
+
+async function editInitiative(initiativeId) {
+    if (!editMode) return;
+    const tree = await loadTree(selectedTeamId, selectedManagerId);
+    let found = null;
+    (function find(nodes) {
+        for (let node of nodes) {
+            if (node.initiatives) {
+                found = node.initiatives.find(i => i.id === initiativeId);
+                if (found) return;
+            }
+            if (node.children) find(node.children);
+            if (found) return;
+        }
+    })(tree);
+    if (!found) return;
+    document.getElementById('initiativeId').value = found.id;
+    document.getElementById('initiativeObjectiveId').value = found.objectiveId;
+    document.getElementById('initiativeName').value = found.name;
+    document.getElementById('initiativeWhat').value = found.what || '';
+    document.getElementById('initiativeImpact').value = found.impact || '';
+    document.getElementById('initiativeDocLink').value = found.docLink || '';
+    document.getElementById('initiativeStatus').value = found.status || 'backlog';
+    new bootstrap.Modal(document.getElementById('initiativeModal')).show();
+}
+
+async function deleteInitiative(initiativeId) {
+    if (!editMode) return;
+    if (!confirm('Delete this Initiative?')) return;
+    await fetch(`/api/initiatives/${initiativeId}`, { method: 'DELETE' });
+    refreshTree();
 }
 
 async function deleteKR(krId) {

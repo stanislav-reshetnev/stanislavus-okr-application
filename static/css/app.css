@@ -178,6 +178,17 @@ h1, h2, h3, h4, h5 {
     color: var(--green);
 }
 
+.btn-outline-info {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: #0891b2;
+}
+.btn-outline-info:hover {
+    background: #ecfeff;
+    border-color: #a5f3fc;
+    color: #0891b2;
+}
+
 .btn-sm {
     padding: 0.2rem 0.55rem;
     font-size: 0.8rem;
@@ -582,6 +593,96 @@ body:not(.edit-mode) .kr-name { cursor: pointer; }
     font-weight: 600;
     font-size: 0.78rem;
     margin-right: 0.15rem;
+}
+
+/* ========== Initiatives ========== */
+.init-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: nowrap;
+    margin-bottom: 0.15rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: var(--radius-sm);
+    transition: background var(--transition), border-color var(--transition);
+    border: 2px solid transparent;
+    font-size: 0.88rem;
+}
+.init-row:nth-child(odd) {
+    background: #f1f8fe;
+}
+.init-row:hover {
+    background: #e0f2fe;
+}
+.init-row .btn-sm {
+    flex-shrink: 0;
+}
+.init-number {
+    color: #0891b2;
+    font-weight: 600;
+    font-size: 0.78rem;
+    margin-right: 0.15rem;
+}
+.init-name {
+    color: #0891b2;
+    font-weight: 600;
+}
+.init-what {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    max-width: 20vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
+}
+.init-impact {
+    font-size: 0.8rem;
+    color: #0891b2;
+    max-width: 20vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
+}
+.init-link {
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+/* ========== Initiative Status ========== */
+.status {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.15em 0.45em;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-left: 0.3rem;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+}
+.status-backlog {
+    background: #f1f5f9;
+    color: #64748b;
+}
+.status-in_progress {
+    background: #dbeafe;
+    color: #2563eb;
+}
+.status-completed {
+    background: #dcfce7;
+    color: #16a34a;
+}
+.status-cancelled {
+    background: #fee2e2;
+    color: #dc2626;
+}
+body:not(.edit-mode) .init-name {
+    cursor: pointer;
 }
 
 /* ========== Progress Bars ========== */

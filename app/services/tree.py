@@ -9,6 +9,7 @@ def _row_to_camel_obj(d):
         'position': d['position'],
         'children': [],
         'keyResults': [],
+        'initiatives': [],
         'teamName': d.get('team_name', ''),
         'managerName': d.get('manager_name', ''),
     }
@@ -32,10 +33,24 @@ def _row_to_camel_kr(d):
     }
 
 
+def _row_to_camel_initiative(d):
+    return {
+        'id': d['id'],
+        'objectiveId': d['objective_id'],
+        'name': d['name'],
+        'what': d['what'],
+        'impact': d['impact'],
+        'docLink': d['doc_link'],
+        'position': d['position'],
+        'status': d.get('status', 'backlog'),
+    }
+
+
 def _sort_children(tree):
     for obj in tree:
         obj['children'] = sorted(obj['children'], key=lambda x: x.get('position', 0))
         obj['keyResults'] = sorted(obj['keyResults'], key=lambda x: x.get('position', 0))
+        obj['initiatives'] = sorted(obj['initiatives'], key=lambda x: x.get('position', 0))
         _sort_children(obj['children'])
     return tree
 
@@ -45,6 +60,7 @@ def build_tree(db, team_filter=None, manager_filter=None):
         'SELECT id, name, parent_id, team_id, manager_id, doc_link, position FROM objectives'
     ).fetchall()
     krs = db.execute('SELECT * FROM key_results').fetchall()
+    initiatives = db.execute('SELECT * FROM initiatives ORDER BY objective_id, position').fetchall()
     teams = {t['id']: t['name'] for t in db.execute('SELECT * FROM teams').fetchall()}
     managers = {m['id']: m['name'] for m in db.execute('SELECT * FROM managers').fetchall()}
 
@@ -60,6 +76,12 @@ def build_tree(db, team_filter=None, manager_filter=None):
         obj_id = kr_dict['objectiveId']
         if obj_id in obj_dict:
             obj_dict[obj_id]['keyResults'].append(kr_dict)
+
+    for inv in initiatives:
+        inv_dict = _row_to_camel_initiative(dict(inv))
+        obj_id = inv_dict['objectiveId']
+        if obj_id in obj_dict:
+            obj_dict[obj_id]['initiatives'].append(inv_dict)
 
     if team_filter or manager_filter:
         return _sort_children(_build_filtered_tree(obj_dict, team_filter, manager_filter))

@@ -14,7 +14,10 @@ Explore your OKR tree in a familiar nested list. Expand/collapse key results, tr
 <p>
 
 ### 🔍 Filtering & Search
-Quickly narrow down objectives by team or manager. Use the real-time text search to find specific objectives or key results across the entire tree.
+Quickly narrow down objectives by team or manager. Use the real-time text search to find specific objectives, key results, or initiatives across the entire tree.
+
+### 📋 Initiatives
+Create and track initiatives (projects or tasks) linked to each objective. Each initiative carries a status — backlog, in progress, completed, or cancelled — giving you full visibility into the operational work driving your objectives forward.
 
 ### 🕸️ Interactive Graph Mode
 Switch to a visual tree view with SVG connection lines that reveal the parent-child relationships between objectives. Pan the canvas by dragging with your mouse.
@@ -24,7 +27,7 @@ Switch to a visual tree view with SVG connection lines that reveal the parent-ch
 <p>
 
 ### ✏️ Edit Mode
-Enable edit mode to create, edit, reorder, and delete objectives and key results. Drag-and-drop to restructure the tree. Manage teams and managers in dedicated reference panels.
+Enable edit mode to create, edit, reorder, and delete objectives, key results, and initiatives. Drag-and-drop to restructure the tree. Manage teams and managers in dedicated reference panels.
 
 ### 🔐 Role-Based Access
 Three built-in roles — `view`, `edit`, and `admin` — control who can see, modify, or manage users. A first-run setup wizard creates the initial administrator account.
@@ -35,7 +38,31 @@ Update key results programmatically via Bearer token authentication. KRs updated
 ### 🐳 Docker-Ready
 One command to start: `docker compose up -d`. Data persists in SQLite, static files are served by nginx, environment variables let you customize branding and timezone.
 
-## Architecture
+## Domain Model
+
+The application revolves around five core entities:
+
+```
+                  ┌────────────┐
+                  │  Objective  │
+                  └──────┬─────┘
+                    ┌────┴────┐
+                    │         │
+              ┌─────┴──┐  ┌──┴──────┐
+              │KeyResult│  │Initiative│
+              └────────┘  └─────────┘
+```
+
+| Entity | Description |
+|--------|-------------|
+| **Objective** | A high-level goal (e.g. "Improve Customer Satisfaction"). Objectives are hierarchical — each can have a `parentId` making it a child of another objective, or be a root-level goal. |
+| **Key Result** | A measurable outcome tied to an objective (e.g. "NPS score reaches 9+"). Tracks progress via `currentValue` / `targetValue` / `initialValue` with a unit and confidence score. |
+| **Initiative** | A project or task contributing to an objective (e.g. "Run customer survey"). Contains a description of the work (`what`), expected `impact`, a documentation link, and a `status` (backlog → in_progress → completed / cancelled). |
+| **Team** | A group responsible for objectives. Objectives can be filtered by team. |
+| **Manager** | A person responsible for objectives. Objectives can be filtered by manager. |
+
+- **Key Results** and **Initiatives** belong to exactly one **Objective**.
+- **Objectives** form a tree (via `parentId`). A **Tree** is the full recursive view of objectives with their children, key results, and initiatives.
 
 ```
 stanislavus-okr-application/
@@ -44,8 +71,8 @@ stanislavus-okr-application/
 │   ├── config.py         # configuration (DB path, SECRET_KEY, etc.)
 │   ├── database.py       # SQLite connection, schema, migrations
 │   ├── auth_utils.py     # role_required decorator
-│   ├── handlers/          # OpenAPI handler functions (auth, teams, managers, objectives, key_results)
-│   ├── models/            # objective, key_result, team, manager, user
+│   ├── handlers/          # OpenAPI handler functions (auth, teams, managers, objectives, key_results, initiatives)
+│   ├── models/            # objective, key_result, team, manager, user, initiative
 │   ├── routes/            # Flask page-route blueprints: frontend, auth
 │   └── services/          # tree builder
 ├── conf/nginx.conf       # nginx reverse proxy config
@@ -123,7 +150,7 @@ Three roles are supported:
 | Role | Permissions |
 |------|-------------|
 | `view` | Read-only access to the OKR tree |
-| `edit` | View + create/edit/delete objectives, key results, teams, and managers |
+| `edit` | View + create/edit/delete objectives, key results, initiatives, teams, and managers |
 | `admin` | Full access + user management (create/edit/delete users, change roles) |
 
 - Role assignment is managed exclusively by administrators.

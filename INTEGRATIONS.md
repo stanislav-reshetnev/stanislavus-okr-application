@@ -30,9 +30,10 @@ curl http://localhost:5000/api/objectives/flat \
 |---------|-------------|
 | **Objective** | A high-level goal (e.g. "Improve Customer Satisfaction"). Objectives form a **tree** — each objective can have a `parentId` (another objective) or be a root. |
 | **Key Result** | A measurable outcome tied to an objective (e.g. "NPS score reaches 9+"). Each key result belongs to exactly one objective. |
+| **Initiative** | A project or task contributing to an objective (e.g. "Run customer survey"). Each initiative has a status: backlog, in progress, completed, or cancelled. |
 | **Team** | A group responsible for objectives. Objectives can be filtered by team. |
 | **Manager** | A person responsible for objectives. Objectives can be filtered by manager. |
-| **Tree** | The hierarchical view of objectives with nested children and their key results. |
+| **Tree** | The hierarchical view of objectives with nested children, their key results, and initiatives. |
 
 Key Results track progress via `currentValue` / `targetValue` / `initialValue`. Whenever `currentValue` is submitted in an update request, the `lastUpdated` timestamp is refreshed automatically. The `source` field is updated only when explicitly provided in the request body.
 

@@ -1089,6 +1089,111 @@
           }
         ]
       }
+    },
+    "/api/objectives/{objectiveId}/initiatives": {
+      "post": {
+        "tags": ["Initiatives"],
+        "summary": "Create an initiative",
+        "description": "Creates a new initiative under an objective. Requires edit or admin role.",
+        "operationId": "createInitiative",
+        "parameters": [
+          {
+            "name": "objectiveId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateInitiativeRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Initiative created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Initiative" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        },
+        "security": [{ "bearerAuth": [] }, { "sessionCookie": [] }]
+      }
+    },
+    "/api/initiatives/reorder": {
+      "put": {
+        "tags": ["Initiatives"],
+        "summary": "Reorder initiatives",
+        "description": "Batch-update positions for initiatives within an objective. Requires edit or admin role.",
+        "operationId": "reorderInitiatives",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReorderRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Initiatives reordered", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StatusResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "bearerAuth": [] }, { "sessionCookie": [] }]
+      }
+    },
+    "/api/initiatives/{initiativeId}": {
+      "put": {
+        "tags": ["Initiatives"],
+        "summary": "Update an initiative",
+        "description": "Updates one or more fields of an initiative. Requires edit or admin role.",
+        "operationId": "updateInitiative",
+        "parameters": [
+          {
+            "name": "initiativeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateInitiativeRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Initiative updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StatusResponse" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "bearerAuth": [] }, { "sessionCookie": [] }]
+      },
+      "delete": {
+        "tags": ["Initiatives"],
+        "summary": "Delete an initiative",
+        "description": "Permanently deletes an initiative. Requires edit or admin role.",
+        "operationId": "deleteInitiative",
+        "parameters": [
+          {
+            "name": "initiativeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Initiative deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeletedResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "bearerAuth": [] }, { "sessionCookie": [] }]
+      }
     }
   },
   "components": {
@@ -1451,6 +1556,13 @@
             "items": {
               "$ref": "#/components/schemas/KeyResult"
             }
+          },
+          "initiatives": {
+            "type": "array",
+            "description": "Initiatives belonging to this objective",
+            "items": {
+              "$ref": "#/components/schemas/Initiative"
+            }
           }
         },
         "required": [
@@ -1464,7 +1576,8 @@
           "teamName",
           "managerName",
           "children",
-          "keyResults"
+          "keyResults",
+          "initiatives"
         ]
       },
       "KeyResult": {
@@ -1831,6 +1944,129 @@
             "type": "string",
             "enum": ["low", "medium", "high"],
             "description": "Confidence score for the key result"
+          }
+        }
+      },
+      "Initiative": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Primary key, UUID",
+            "minLength": 1
+          },
+          "objectiveId": {
+            "type": "string",
+            "description": "Parent objective ID",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Initiative name",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "what": {
+            "type": "string",
+            "description": "What are we doing?"
+          },
+          "impact": {
+            "type": "string",
+            "description": "How will this impact the objective?"
+          },
+          "docLink": {
+            "type": "string",
+            "description": "Link to initiative documentation",
+            "maxLength": 2000
+          },
+          "position": {
+            "type": "integer",
+            "description": "Sort order among siblings (0-based)",
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "description": "Initiative status",
+            "enum": ["backlog", "in_progress", "completed", "cancelled"],
+            "default": "backlog"
+          }
+        },
+        "required": [
+          "id",
+          "objectiveId",
+          "name",
+          "what",
+          "impact",
+          "docLink",
+          "position",
+          "status"
+        ]
+      },
+      "CreateInitiativeRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Initiative name",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "what": {
+            "type": "string",
+            "description": "What are we doing?"
+          },
+          "impact": {
+            "type": "string",
+            "description": "How will this impact the objective?"
+          },
+          "docLink": {
+            "type": "string",
+            "description": "Link to initiative documentation",
+            "maxLength": 2000
+          },
+          "status": {
+            "type": "string",
+            "description": "Initiative status",
+            "enum": ["backlog", "in_progress", "completed", "cancelled"],
+            "default": "backlog"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateInitiativeRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Initiative name",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "what": {
+            "type": "string",
+            "description": "What are we doing?"
+          },
+          "impact": {
+            "type": "string",
+            "description": "How will this impact the objective?"
+          },
+          "docLink": {
+            "type": "string",
+            "description": "Link to initiative documentation",
+            "maxLength": 2000
+          },
+          "position": {
+            "type": "integer",
+            "description": "Sort order among siblings (0-based)",
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "description": "Initiative status",
+            "enum": ["backlog", "in_progress", "completed", "cancelled"],
+            "default": "backlog"
           }
         }
       },

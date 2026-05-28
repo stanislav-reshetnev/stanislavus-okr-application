@@ -92,6 +92,12 @@ function renderTree(nodes, parentElement, isRoot = false) {
             btnKR.textContent = '+KR';
             btnKR.onclick = (e) => { e.stopPropagation(); addKR(node.id); };
             nodeDiv.appendChild(btnKR);
+            const btnInit = document.createElement('button');
+            btnInit.className = 'btn btn-outline-info btn-sm py-0';
+            btnInit.textContent = '+Init';
+            btnInit.title = 'Add Initiative';
+            btnInit.onclick = (e) => { e.stopPropagation(); addInitiative(node.id); };
+            nodeDiv.appendChild(btnInit);
         }
 
         li.appendChild(nodeDiv);
@@ -170,6 +176,44 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 krDiv.appendChild(krRow);
             });
             li.appendChild(krDiv);
+        }
+
+        if (node.initiatives && node.initiatives.length) {
+            const initDiv = document.createElement('div');
+            initDiv.className = 'kr-item';
+            node.initiatives.forEach((init) => {
+                const initNumber = `I${objNumber}.${(init.position ?? 0) + 1}`;
+                const initRow = document.createElement('div');
+                initRow.className = 'init-row';
+                initRow.dataset.initiativeId = init.id;
+
+                const statusMap = { backlog: 'Backlog', in_progress: 'In Progress', completed: 'Completed', cancelled: 'Cancelled' };
+                const initStatus = init.status || 'backlog';
+                initRow.innerHTML = `
+                    📋 <strong class="init-number">${initNumber}:</strong> <strong class="init-name">${init.name}</strong>
+                    <span class="status status-${initStatus}">${statusMap[initStatus] || initStatus}</span>`;
+
+                initRow.addEventListener('click', (e) => {
+                    if (editMode) return;
+                    if (e.target.closest('.btn')) return;
+                    showInitiativeDetail(init, initNumber, objNumber, node.name);
+                });
+
+                if (editMode) {
+                    const btnEdit = document.createElement('button');
+                    btnEdit.className = 'btn btn-outline-secondary btn-sm py-0 ms-2';
+                    btnEdit.textContent = '✎';
+                    btnEdit.onclick = () => editInitiative(init.id);
+                    initRow.appendChild(btnEdit);
+                    const btnDel = document.createElement('button');
+                    btnDel.className = 'btn btn-outline-danger btn-sm py-0';
+                    btnDel.textContent = '🗑️';
+                    btnDel.onclick = () => deleteInitiative(init.id);
+                    initRow.appendChild(btnDel);
+                }
+                initDiv.appendChild(initRow);
+            });
+            li.appendChild(initDiv);
         }
 
         if (node.children && node.children.length) {
@@ -332,17 +376,26 @@ function renderTreeGraphic(nodes, container) {
         if (meta.length) boxHtml += `<div class="objective-meta">${meta.join(' · ')}</div>`;
         box.innerHTML = boxHtml;
 
+        const popoverParts = [];
         if (node.keyResults && node.keyResults.length) {
-            const krList = node.keyResults.map(kr => {
+            node.keyResults.forEach(kr => {
                 const pct = calculateKRProgress(kr);
                 const statusIcon = pct >= 100 ? '✅' : '📊';
-                return `<div class="mb-1">${statusIcon} <strong>${kr.name}</strong>: ${kr.currentValue} → ${kr.targetValue} ${kr.unit} (${Math.round(pct)}%)</div>`;
-            }).join('');
+                popoverParts.push(`<div class="mb-1">${statusIcon} <strong>${kr.name}</strong>: ${kr.currentValue} → ${kr.targetValue} ${kr.unit} (${Math.round(pct)}%)</div>`);
+            });
+        }
+        if (node.initiatives && node.initiatives.length) {
+            popoverParts.push(`<hr class="my-1" style="border-color:#e2e8f0"><div class="mb-1" style="color:#0891b2;font-weight:600;font-size:0.75rem">INITIATIVES</div>`);
+            node.initiatives.forEach(init => {
+                popoverParts.push(`<div class="mb-1">📋 <strong>${init.name}</strong></div>`);
+            });
+        }
+        if (popoverParts.length) {
             box.setAttribute('data-bs-toggle', 'popover');
             box.setAttribute('data-bs-html', 'true');
             box.setAttribute('data-bs-trigger', 'hover focus');
             box.setAttribute('data-bs-placement', 'auto');
-            box.setAttribute('data-bs-content', krList);
+            box.setAttribute('data-bs-content', popoverParts.join(''));
         }
 
         group.appendChild(box);

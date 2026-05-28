@@ -62,11 +62,16 @@ function filterTree(nodes, query) {
             ? node.keyResults
             : node.keyResults.filter(kr => kr.name.toLowerCase().includes(q));
         const krMatch = !nameMatch && filteredKRs && filteredKRs.length > 0;
+        const filteredInits = nameMatch || !node.initiatives
+            ? node.initiatives
+            : node.initiatives.filter(i => i.name.toLowerCase().includes(q));
+        const initMatch = !nameMatch && filteredInits && filteredInits.length > 0;
         const filteredChildren = node.children ? filterTree(node.children, q) : [];
         const childrenMatch = filteredChildren.length > 0;
-        if (nameMatch || krMatch || childrenMatch) {
+        if (nameMatch || krMatch || initMatch || childrenMatch) {
             const resultKRs = (nameMatch || krMatch) ? filteredKRs : node.keyResults;
-            acc.push({ ...node, keyResults: resultKRs, children: filteredChildren });
+            const resultInits = (nameMatch || initMatch) ? filteredInits : node.initiatives;
+            acc.push({ ...node, keyResults: resultKRs, initiatives: resultInits, children: filteredChildren });
         }
         return acc;
     }, []);
@@ -128,9 +133,9 @@ async function refreshTree(opts = {}) {
             const li = fragment.querySelector(`li[data-object-id="${id}"]`);
             if (li) {
                 const caret = li.querySelector('.caret');
-                const krBlock = li.querySelector('.kr-item');
+                const krBlocks = li.querySelectorAll('.kr-item');
                 if (caret) caret.classList.add('caret-down');
-                if (krBlock) krBlock.classList.add('active');
+                krBlocks.forEach(block => block.classList.add('active'));
             }
         });
         treeContainer.innerHTML = '';

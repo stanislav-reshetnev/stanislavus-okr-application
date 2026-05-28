@@ -17,6 +17,26 @@ document.getElementById('objForm').addEventListener('submit', async (e) => {
     refreshTree();
 });
 
+document.getElementById('initiativeForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('initiativeId').value;
+    const data = {
+        name: document.getElementById('initiativeName').value,
+        what: document.getElementById('initiativeWhat').value || '',
+        impact: document.getElementById('initiativeImpact').value || '',
+        docLink: document.getElementById('initiativeDocLink').value || '',
+        status: document.getElementById('initiativeStatus').value || 'backlog'
+    };
+    if (id) {
+        await fetch(`/api/initiatives/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+    } else {
+        const objId = document.getElementById('initiativeObjectiveId').value;
+        await fetch(`/api/objectives/${objId}/initiatives`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+    }
+    bootstrap.Modal.getInstance(document.getElementById('initiativeModal')).hide();
+    refreshTree();
+});
+
 document.getElementById('krForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('krId').value;

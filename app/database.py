@@ -51,6 +51,16 @@ def init_db(app):
                 unit TEXT DEFAULT '',
                 FOREIGN KEY (objective_id) REFERENCES objectives(id) ON DELETE CASCADE
             );
+            CREATE TABLE IF NOT EXISTS initiatives (
+                id TEXT PRIMARY KEY,
+                objective_id TEXT NOT NULL,
+                name TEXT NOT NULL,
+                what TEXT DEFAULT '',
+                impact TEXT DEFAULT '',
+                doc_link TEXT DEFAULT '',
+                position INTEGER DEFAULT 0,
+                FOREIGN KEY (objective_id) REFERENCES objectives(id) ON DELETE CASCADE
+            );
             CREATE TABLE IF NOT EXISTS users (
                 id TEXT PRIMARY KEY,
                 email TEXT UNIQUE NOT NULL,
@@ -104,6 +114,10 @@ def init_db(app):
             pass
         try:
             db.execute('ALTER TABLE key_results ADD COLUMN confidence TEXT DEFAULT "medium"')
+        except sqlite3.OperationalError:
+            pass
+        try:
+            db.execute('ALTER TABLE initiatives ADD COLUMN status TEXT DEFAULT "backlog"')
         except sqlite3.OperationalError:
             pass
 
@@ -190,6 +204,16 @@ def init_db(app):
             'managers': {
                 'id': 'Primary key, UUID',
                 'name': 'Manager name',
+            },
+            'initiatives': {
+                'id': 'Primary key, UUID',
+                'objective_id': 'Parent objective ID',
+                'name': 'Initiative name',
+                'what': 'What are we doing?',
+                'impact': 'How will this impact the objective?',
+                'doc_link': 'Link to initiative documentation',
+                'position': 'Sort order among siblings (0-based)',
+                'status': 'Initiative status: backlog, in_progress, completed, cancelled',
             },
         }
         for table_name, cols in descriptions.items():
