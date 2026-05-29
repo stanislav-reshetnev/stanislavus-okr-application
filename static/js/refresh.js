@@ -53,6 +53,15 @@ async function reorderKRs(items) {
     await refreshTree({ skipSkeleton: true });
 }
 
+async function reorderInitiatives(items) {
+    await fetch('/api/initiatives/reorder', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({items})
+    });
+    await refreshTree({ skipSkeleton: true });
+}
+
 function filterTree(nodes, query) {
     if (!query) return nodes;
     const q = query.toLowerCase();

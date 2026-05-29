@@ -484,6 +484,8 @@ body.edit-mode .drag-handle { display: inline; }
 .node.drop-after { border-bottom-color: var(--primary); }
 .kr-row.drop-before { border-top-color: var(--primary); }
 .kr-row.drop-after { border-bottom-color: var(--primary); }
+.init-row.drop-before { border-top-color: var(--primary); }
+.init-row.drop-after { border-bottom-color: var(--primary); }
 
 .objective-name, .kr-name {
     display: inline-block;

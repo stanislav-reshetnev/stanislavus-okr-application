@@ -189,15 +189,35 @@ function renderTree(nodes, parentElement, isRoot = false) {
 
                 const statusMap = { backlog: 'Backlog', in_progress: 'In Progress', completed: 'Completed', cancelled: 'Cancelled' };
                 const initStatus = init.status || 'backlog';
+                const initHandleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
                 initRow.innerHTML = `
-                    📋 <strong class="init-number">${initNumber}:</strong> <strong class="init-name">${init.name}</strong>
+                    ${initHandleHtml}📋 <strong class="init-number">${initNumber}:</strong> <strong class="init-name">${init.name}</strong>
                     <span class="status status-${initStatus}">${statusMap[initStatus] || initStatus}</span>`;
 
                 initRow.addEventListener('click', (e) => {
                     if (editMode) return;
-                    if (e.target.closest('.btn')) return;
+                    if (e.target.closest('.drag-handle, .btn')) return;
                     showInitiativeDetail(init, initNumber, objNumber, node.name);
                 });
+
+                const initHandle = initRow.querySelector('.drag-handle');
+                if (initHandle) {
+                    initHandle.addEventListener('dragstart', (e) => {
+                        if (!editMode) { e.preventDefault(); return; }
+                        e.dataTransfer.setData('text/plain', 'init:' + init.id);
+                        e.dataTransfer.effectAllowed = 'move';
+                        initRow.classList.add('dragging');
+                    });
+                    initHandle.addEventListener('dragend', () => {
+                        initRow.classList.remove('dragging');
+                        document.querySelectorAll('.node.drop-before, .node.drop-after, .kr-row.drop-before, .kr-row.drop-after, .init-row.drop-before, .init-row.drop-after')
+                            .forEach(el => el.classList.remove('drop-before', 'drop-after'));
+                    });
+                }
+
+                initRow.addEventListener('dragover', onInitiativeDragOver);
+                initRow.addEventListener('dragleave', onInitiativeDragLeave);
+                initRow.addEventListener('drop', onInitiativeDrop);
 
                 if (editMode) {
                     const btnEdit = document.createElement('button');
@@ -327,6 +347,58 @@ function onKRDrop(e) {
 
     const items = ids.map((id, i) => ({id, position: i}));
     reorderKRs(items);
+}
+
+// ── Initiative DnD ────────────────────────────────────────────────
+
+function onInitiativeDragOver(e) {
+    if (!editMode) return;
+    if (!e.dataTransfer.types.length) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    document.querySelectorAll('.init-row.drop-before, .init-row.drop-after')
+        .forEach(el => el.classList.remove('drop-before', 'drop-after'));
+
+    const row = e.currentTarget;
+    const rect = row.getBoundingClientRect();
+    const insertAfter = e.clientY > rect.top + rect.height / 2;
+    row.classList.toggle('drop-before', !insertAfter);
+    row.classList.toggle('drop-after', insertAfter);
+}
+
+function onInitiativeDragLeave(e) {
+    const row = e.currentTarget;
+    row.classList.remove('drop-before', 'drop-after');
+}
+
+function onInitiativeDrop(e) {
+    e.preventDefault();
+    const targetRow = e.currentTarget;
+    targetRow.classList.remove('drop-before', 'drop-after');
+
+    const raw = e.dataTransfer.getData('text/plain');
+    if (!raw || !raw.startsWith('init:')) return;
+    const draggedId = raw.slice(5);
+    const container = targetRow.parentElement;
+    if (!container) return;
+
+    const siblings = Array.from(container.querySelectorAll(':scope > .init-row[data-initiative-id]'));
+    const targetId = targetRow.dataset.initiativeId;
+    if (!draggedId || draggedId === targetId) return;
+
+    const rect = targetRow.getBoundingClientRect();
+    const insertAfter = e.clientY > rect.top + rect.height / 2;
+    const ids = siblings.map(el => el.dataset.initiativeId);
+
+    const fromIdx = ids.indexOf(draggedId);
+    if (fromIdx === -1) return;
+    ids.splice(fromIdx, 1);
+    const toIdx = ids.indexOf(targetId) + (insertAfter ? 1 : 0);
+    ids.splice(toIdx, 0, draggedId);
+
+    const items = ids.map((id, i) => ({id, position: i}));
+    reorderInitiatives(items);
 }
 
 // ── Tree graphic view ─────────────────────────────────────────────
