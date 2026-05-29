@@ -192,8 +192,8 @@ function showInitiativeDetail(init, initNumber, objCode, objName) {
     new bootstrap.Modal(document.getElementById('initiativeDetailModal')).show();
 }
 
-function copyCurlCode() {
-    const el = document.getElementById('krCurlSnippet');
+function copyCurlCode(elementId) {
+    const el = document.getElementById(elementId || 'krCurlSnippet');
     const text = el.textContent;
     if (!text || text === '—') return;
     if (navigator.clipboard) {
@@ -216,6 +216,7 @@ async function addInitiative(objectiveId) {
     document.getElementById('initiativeImpact').value = '';
     document.getElementById('initiativeDocLink').value = '';
     document.getElementById('initiativeStatus').value = 'backlog';
+    document.getElementById('initiativeCurlSnippet').textContent = '';
     new bootstrap.Modal(document.getElementById('initiativeModal')).show();
 }
 
@@ -241,6 +242,12 @@ async function editInitiative(initiativeId) {
     document.getElementById('initiativeImpact').value = found.impact || '';
     document.getElementById('initiativeDocLink').value = found.docLink || '';
     document.getElementById('initiativeStatus').value = found.status || 'backlog';
+    const curl = `curl -X PUT \
+  -H 'Authorization: Bearer <API_TOKEN>' \
+  -H 'Content-Type: application/json' \
+  -d '{"status": "in_progress"}' \
+  ${appHost}/api/initiatives/${found.id}`;
+    document.getElementById('initiativeCurlSnippet').textContent = curl;
     new bootstrap.Modal(document.getElementById('initiativeModal')).show();
 }
 

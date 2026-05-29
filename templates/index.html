@@ -179,6 +179,12 @@
                                 <option value="cancelled">Cancelled</option>
                             </select>
                         </div>
+                        <button type="button" class="btn btn-outline-secondary btn-sm w-100 mb-2" data-bs-toggle="collapse" data-bs-target="#initiativeCurlCode" aria-expanded="false">
+                            Curl code for external updates ▾
+                        </button>
+                        <div class="collapse" id="initiativeCurlCode">
+                            <pre id="initiativeCurlSnippet" style="cursor:pointer;background:#f8f9fa;padding:8px;border-radius:4px;font-size:12px;white-space:pre-wrap;word-break:break-all;" onclick="copyCurlCode('initiativeCurlSnippet')" title="Click to copy">—</pre>
+                        </div>
                         <button type="submit" class="btn btn-primary w-100">Save</button>
                     </form>
                 </div>
