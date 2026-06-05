@@ -103,6 +103,7 @@ async function deleteUser(id) {
 
 function showProfileModal() {
     document.getElementById('profileEmail').textContent = currentUser.email;
+    document.getElementById('profileRole').textContent = currentUser.role;
     document.getElementById('profileForm').reset();
     new bootstrap.Modal(document.getElementById('profileModal')).show();
 }
