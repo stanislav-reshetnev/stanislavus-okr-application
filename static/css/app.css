@@ -259,6 +259,42 @@ h1, h2, h3, h4, h5 {
     margin-right: 0.2rem;
 }
 
+.cycle-progress-wrap {
+    width: 80px;
+    cursor: default;
+    flex-shrink: 0;
+}
+.cycle-progress-track {
+    position: relative;
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.cycle-progress-bar {
+    position: relative;
+    height: 100%;
+    border-radius: 3px;
+    background: var(--primary);
+    transition: width 0.4s ease;
+    z-index: 1;
+}
+.cycle-progress-bar.draft { background: #cbd5e1; }
+.cycle-progress-bar.completed { background: var(--green); }
+.cycle-ticks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+}
+.cycle-tick {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    background: rgba(148, 163, 184, 0.6);
+}
+
 #cycleSwitcher {
     cursor: pointer;
     min-width: 150px;

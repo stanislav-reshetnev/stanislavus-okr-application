@@ -359,9 +359,11 @@ async function saveCycle(cycleId) {
 function populateCycleSwitcher(cycles, selectedId) {
     const sel = document.getElementById('cycleSwitcher');
     if (!sel) return;
+    cyclesList = cycles;
     const symbols = { draft: '🟡', in_progress: '🟢', completed: '✅' };
     if (!cycles.length) {
         sel.innerHTML = '<option value="" disabled selected>No cycles</option>';
+        updateCycleProgress();
         return;
     }
     sel.innerHTML = cycles.map(c =>
@@ -370,4 +372,61 @@ function populateCycleSwitcher(cycles, selectedId) {
     if (selectedId && cycles.some(c => c.id === selectedId)) {
         sel.value = selectedId;
     }
+    updateCycleProgress();
+}
+
+function updateCycleProgress() {
+    const wrap = document.getElementById('cycleProgressWrap');
+    const bar = document.getElementById('cycleProgressBar');
+    if (!wrap || !bar) return;
+    const cycle = cyclesList.find(c => c.id === selectedCycleId);
+    if (!cycle || !cycle.startDate || !cycle.endDate) {
+        wrap.style.display = 'none';
+        return;
+    }
+    wrap.style.display = '';
+    const start = new Date(cycle.startDate + 'T00:00:00');
+    const end = new Date(cycle.endDate + 'T00:00:00');
+    const now = new Date();
+    let pct;
+    if (now <= start) pct = 0;
+    else if (now >= end) pct = 100;
+    else pct = ((now - start) / (end - start)) * 100;
+    pct = Math.min(100, Math.max(0, pct));
+    bar.style.width = pct + '%';
+    bar.classList.toggle('draft', cycle.status === 'draft');
+    bar.classList.toggle('completed', pct >= 100);
+    wrap.title = `OKR Cycle: ${cycle.startDate} → ${cycle.endDate}`;
+    populateCycleTicks(cycle.startDate, cycle.endDate);
+}
+
+function populateCycleTicks(startDate, endDate) {
+    const container = document.getElementById('cycleTicks');
+    if (!container) return;
+    const start = new Date(startDate + 'T00:00:00');
+    const end = new Date(endDate + 'T00:00:00');
+    const totalDays = (end - start) / 86400000;
+    if (totalDays <= 0) { container.innerHTML = ''; return; }
+
+    let tickDates = [];
+    if (totalDays <= 21) {
+        for (let d = new Date(start); d < end; d.setDate(d.getDate() + 7))
+            tickDates.push(new Date(d));
+    } else if (totalDays <= 70) {
+        for (let d = new Date(start); d < end; d.setDate(d.getDate() + 14))
+            tickDates.push(new Date(d));
+    } else {
+        let d = new Date(start);
+        d.setDate(1);
+        d.setMonth(d.getMonth() + 1);
+        while (d < end) {
+            tickDates.push(new Date(d));
+            d.setMonth(d.getMonth() + 1);
+        }
+    }
+
+    container.innerHTML = tickDates.map(t => {
+        const left = ((t - start) / (end - start)) * 100;
+        return `<div class="cycle-tick" style="left:${left}%"></div>`;
+    }).join('');
 }

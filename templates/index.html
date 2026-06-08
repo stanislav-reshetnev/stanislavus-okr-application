@@ -53,7 +53,15 @@
                 <button class="btn btn-outline-secondary btn-sm" id="searchToggleBtn" title="Search">🔍</button>
                 <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Search objectives and KRs..." style="display:none">
             </div>
-            <select id="cycleSwitcher" class="form-select form-select-sm ms-auto" onchange="onCycleChange(this)"></select>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <div class="cycle-progress-wrap" id="cycleProgressWrap" style="display:none" title="">
+                    <div class="cycle-progress-track">
+                        <div class="cycle-progress-bar" id="cycleProgressBar" style="width:0%"></div>
+                        <div class="cycle-ticks" id="cycleTicks"></div>
+                    </div>
+                </div>
+                <select id="cycleSwitcher" class="form-select form-select-sm" onchange="onCycleChange(this)"></select>
+            </div>
             <div class="btn-group btn-group-sm" id="viewModeGroup" role="group">
                 <button type="button" class="btn btn-outline-secondary active" data-mode="hierarchy" title="Hierarchical List">🔽 Hierarchy</button>
                 <button type="button" class="btn btn-outline-secondary" data-mode="tree" title="Tree View">🌳 Tree</button>

@@ -1,4 +1,5 @@
 let selectedCycleId = '';
+let cyclesList = [];
 let selectedTeamId = '';
 let selectedManagerId = '';
 let searchQuery = '';

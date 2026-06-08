@@ -115,6 +115,7 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
 
 async function onCycleChange(sel) {
     selectedCycleId = sel.value;
+    updateCycleProgress();
     await refreshTree();
 }
 
