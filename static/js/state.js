@@ -1,3 +1,4 @@
+let selectedCycleId = '';
 let selectedTeamId = '';
 let selectedManagerId = '';
 let searchQuery = '';
@@ -24,6 +25,20 @@ let panStartX = 0;
 let panStartY = 0;
 let panScrollLeft = 0;
 let panScrollTop = 0;
+
+function showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = 'toast-notification ' + type;
+    el.textContent = message;
+    container.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => {
+        el.classList.remove('show');
+        el.addEventListener('transitionend', () => el.remove());
+    }, duration);
+}
 
 function initTreePan() {
     const panel = document.getElementById('treePanel');

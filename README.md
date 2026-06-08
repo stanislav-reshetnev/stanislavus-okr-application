@@ -14,7 +14,7 @@ Explore your OKR tree in a familiar nested list. Expand/collapse key results, tr
 <p>
 
 ### 🔍 Filtering & Search
-Quickly narrow down objectives by team or manager. Use the real-time text search to find specific objectives, key results, or initiatives across the entire tree.
+Quickly narrow down objectives by team, manager, or OKR cycle (via the selector in the filter bar). Use the real-time text search to find specific objectives, key results, or initiatives across the entire tree.
 
 ### 📋 Initiatives
 Create and track initiatives (projects or tasks) linked to each objective. Each initiative carries a status — backlog, in progress, completed, or cancelled — giving you full visibility into the operational work driving your objectives forward.
@@ -32,6 +32,11 @@ Enable edit mode to create, edit, reorder, and delete objectives, key results, a
 ### 🔐 Role-Based Access
 Three built-in roles — `view`, `edit`, and `admin` — control who can see, modify, or manage users. A first-run setup wizard creates the initial administrator account.
 
+### 🔄 OKR Cycles
+Organise objectives into time-bound cycles (quarters, months, years). Each root objective belongs to exactly one cycle, keeping different planning periods cleanly separated. Switch between cycles via the selector in the filter bar — the tree shows only objectives belonging to the selected cycle.
+
+Cycle lifecycle: **draft → in_progress → completed**. Only one cycle may be `in_progress` at a time. Administrators manage cycles (create, edit, change status) via the **🗓 OKR Cycles** menu item. The default cycle length is configurable under **⚙ Settings**.
+
 ### ⚡ Automated KR Updates
 Update key results programmatically via Bearer token authentication. KRs updated through the API are automatically marked with a 🤖 robot icon and tooltip in the UI.
 
@@ -40,29 +45,37 @@ One command to start: `docker compose up -d`. Data persists in SQLite, static fi
 
 ## Domain Model
 
-The application revolves around five core entities:
+The application revolves around seven core entities:
 
 ```
-                  ┌────────────┐
-                  │  Objective  │
-                  └──────┬─────┘
-                    ┌────┴────┐
-                    │         │
-              ┌─────┴──┐  ┌──┴──────┐
-              │KeyResult│  │Initiative│
-              └────────┘  └─────────┘
+  ┌───────────┐
+  │   Cycle   │
+  └─────┬─────┘
+        │ has
+  ┌─────▼──────┐
+  │  Objective  │
+  └──────┬─────┘
+    ┌────┴────┐
+    │         │
+  ┌──┴────┐  ┌┴────────┐
+  │KeyResult│ │Initiative│
+  └────────┘  └─────────┘
 ```
 
 | Entity | Description |
 |--------|-------------|
-| **Objective** | A high-level goal (e.g. "Improve Customer Satisfaction"). Objectives are hierarchical — each can have a `parentId` making it a child of another objective, or be a root-level goal. |
+| **Cycle** | A time-bound container for root objectives (e.g. "Q2 2026"). Status: `draft`, `in_progress`, `completed`. Managed by administrators via **🗓 OKR Cycles**. |
+| **Objective** | A high-level goal (e.g. "Improve Customer Satisfaction"). Objectives are hierarchical — each can have a `parentId` making it a child of another objective, or be a root-level goal linked to a **Cycle**. |
 | **Key Result** | A measurable outcome tied to an objective (e.g. "NPS score reaches 9+"). Tracks progress via `currentValue` / `targetValue` / `initialValue` with a unit and confidence score. |
 | **Initiative** | A project or task contributing to an objective (e.g. "Run customer survey"). Contains a description of the work (`what`), expected `impact`, a documentation link, and a `status` (backlog → in_progress → completed / cancelled). |
 | **Team** | A group responsible for objectives. Objectives can be filtered by team. |
 | **Manager** | A person responsible for objectives. Objectives can be filtered by manager. |
+| **Setting** | Key-value configuration store (default cycle length, etc.). Managed by administrators via **⚙ Settings**. |
 
 - **Key Results** and **Initiatives** belong to exactly one **Objective**.
 - **Objectives** form a tree (via `parentId`). A **Tree** is the full recursive view of objectives with their children, key results, and initiatives.
+- **Root objectives** are linked to a **Cycle** (`cycle_id`); child objectives inherit the parent's cycle through the tree structure.
+- **Settings** provide application-wide defaults (e.g. `cycle_length` — year, quarter, or month).
 
 ```
 stanislavus-okr-application/
@@ -71,8 +84,8 @@ stanislavus-okr-application/
 │   ├── config.py         # configuration (DB path, SECRET_KEY, etc.)
 │   ├── database.py       # SQLite connection, schema, migrations
 │   ├── auth_utils.py     # role_required decorator
-│   ├── handlers/          # OpenAPI handler functions (auth, teams, managers, objectives, key_results, initiatives)
-│   ├── models/            # objective, key_result, team, manager, user, initiative
+│   ├── handlers/          # OpenAPI handler functions (auth, teams, managers, objectives, key_results, initiatives, cycles, settings)
+│   ├── models/            # objective, key_result, team, manager, user, initiative, cycle, settings
 │   ├── routes/            # Flask page-route blueprints: frontend, auth
 │   └── services/          # tree builder
 ├── conf/nginx.conf       # nginx reverse proxy config

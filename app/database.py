@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime, timedelta, timezone
 
 from flask import g
 
@@ -71,6 +72,19 @@ def init_db(app):
                 api_token TEXT DEFAULT NULL,
                 api_token_generated_at TIMESTAMP DEFAULT NULL
             );
+            CREATE TABLE IF NOT EXISTS cycles (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'draft',
+                start_date TEXT NOT NULL,
+                end_date TEXT NOT NULL,
+                cycle_length TEXT NOT NULL DEFAULT 'quarter',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            );
         ''')
         try:
             db.execute('ALTER TABLE key_results ADD COLUMN last_updated TIMESTAMP DEFAULT NULL')
@@ -120,8 +134,32 @@ def init_db(app):
             db.execute('ALTER TABLE initiatives ADD COLUMN status TEXT DEFAULT "backlog"')
         except sqlite3.OperationalError:
             pass
+        try:
+            db.execute('ALTER TABLE objectives ADD COLUMN cycle_id TEXT REFERENCES cycles(id)')
+        except sqlite3.OperationalError:
+            pass
 
         needs_backfill = False
+
+        # Seed default cycle if none exists
+        existing = db.execute('SELECT COUNT(*) FROM cycles').fetchone()[0]
+        if existing == 0:
+            import uuid
+            now = datetime.now(timezone.utc)
+            q = (now.month - 1) // 3 + 1
+            q_start = datetime(now.year, 3 * q - 2, 1)
+            q_end = datetime(now.year, 3 * q + 1, 1) - timedelta(days=1)
+            cycle_id = str(uuid.uuid4())
+            cycle_name = f'Q{q} {now.year}'
+            db.execute(
+                'INSERT INTO cycles (id, name, status, start_date, end_date, cycle_length) VALUES (?, ?, ?, ?, ?, ?)',
+                (cycle_id, cycle_name, 'in_progress', q_start.date().isoformat(), q_end.date().isoformat(), 'quarter')
+            )
+            # Seed default cycle_length setting
+            db.execute('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', ('cycle_length', 'quarter'))
+            # Attach existing root objectives to the default cycle
+            db.execute('UPDATE objectives SET cycle_id = ? WHERE parent_id IS NULL AND cycle_id IS NULL', (cycle_id,))
+            needs_backfill = True
 
         rows = db.execute(
             'SELECT id, parent_id, position FROM objectives ORDER BY parent_id, position, id'
@@ -171,6 +209,7 @@ def init_db(app):
                 'manager_id': 'Responsible manager ID',
                 'doc_link': 'Link to documentation',
                 'position': 'Sort order among siblings (0-based)',
+                'cycle_id': 'Parent cycle ID for OKR cycle scoping',
             },
             'key_results': {
                 'id': 'Primary key, UUID',
@@ -214,6 +253,19 @@ def init_db(app):
                 'doc_link': 'Link to initiative documentation',
                 'position': 'Sort order among siblings (0-based)',
                 'status': 'Initiative status: backlog, in_progress, completed, cancelled',
+            },
+            'cycles': {
+                'id': 'Primary key, UUID',
+                'name': 'Cycle name (e.g. Q2 2026)',
+                'status': 'draft | in_progress | completed',
+                'start_date': 'Cycle start date (ISO)',
+                'end_date': 'Cycle end date (ISO)',
+                'cycle_length': 'year | quarter | month',
+                'created_at': 'Creation timestamp',
+            },
+            'settings': {
+                'key': 'Setting name',
+                'value': 'Setting value',
             },
         }
         for table_name, cols in descriptions.items():

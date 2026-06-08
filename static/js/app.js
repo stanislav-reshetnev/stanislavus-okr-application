@@ -6,12 +6,19 @@ document.getElementById('objForm').addEventListener('submit', async (e) => {
         parentId: document.getElementById('objParent').value || null,
         teamId: document.getElementById('objTeam').value || null,
         managerId: document.getElementById('objManager').value || null,
-        docLink: document.getElementById('objDocLink').value || ''
+        docLink: document.getElementById('objDocLink').value || '',
+        cycleId: selectedCycleId || null
     };
+    let resp;
     if (id) {
-        await fetch(`/api/objectives/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        resp = await fetch(`/api/objectives/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
     } else {
-        await fetch('/api/objectives', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        resp = await fetch('/api/objectives', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+    }
+    if (!resp.ok) {
+        const err = await resp.json();
+        showToast(err.error || 'Failed to save objective', 'error');
+        return;
     }
     bootstrap.Modal.getInstance(document.getElementById('objModal')).hide();
     refreshTree();
@@ -77,7 +84,7 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
         refreshUserList();
     } else {
         const err = await resp.json();
-        alert('Error: ' + (err.error || 'Failed to add user'));
+        showToast(err.error || 'Failed to add user', 'error');
     }
 });
 
@@ -88,7 +95,7 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
     const confirm = document.getElementById('profileConfirmPassword').value;
 
     if (new_password !== confirm) {
-        alert('New passwords do not match.');
+        showToast('New passwords do not match.', 'error');
         return;
     }
 
@@ -98,13 +105,53 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
         body: JSON.stringify({current_password, new_password})
     });
     if (resp.ok) {
-        alert('Password changed successfully.');
+        showToast('Password changed successfully.', 'success');
         bootstrap.Modal.getInstance(document.getElementById('profileModal')).hide();
     } else {
         const err = await resp.json();
-        alert('Error: ' + (err.error || 'Failed to change password'));
+        showToast(err.error || 'Failed to change password', 'error');
     }
 });
+
+async function onCycleChange(sel) {
+    selectedCycleId = sel.value;
+    await refreshTree();
+}
+
+async function handleUpdateCycleStatus(cycleId, status) {
+    try {
+        await apiUpdateCycleStatus(cycleId, status);
+        await refreshCycleList();
+    } catch (e) {
+        showToast(e.message || 'Failed to update cycle status', 'error');
+    }
+}
+
+async function saveSettings() {
+    const cycleLength = document.getElementById('settingCycleLength').value;
+    try {
+        await updateSettings({ cycle_length: cycleLength });
+        showToast('Settings saved.', 'success');
+    } catch (e) {
+        showToast('Failed to save settings', 'error');
+    }
+}
+
+async function createNewCycle() {
+    const name = document.getElementById('newCycleName').value.trim();
+    const startDate = document.getElementById('newCycleStartDate').value;
+    const endDate = document.getElementById('newCycleEndDate').value;
+    if (!name || !startDate || !endDate) return;
+    try {
+        await createCycle({ name, startDate, endDate });
+        document.getElementById('newCycleName').value = '';
+        document.getElementById('newCycleStartDate').value = '';
+        document.getElementById('newCycleEndDate').value = '';
+        await refreshCycleList();
+    } catch (e) {
+        showToast(e.message || 'Failed to create cycle', 'error');
+    }
+}
 
 window.addEventListener('DOMContentLoaded', async () => {
     editMode = false;
@@ -120,10 +167,23 @@ window.addEventListener('DOMContentLoaded', async () => {
         editModeToggle.closest('.mode-switch').style.display = 'none';
     }
 
+    if (currentUser.role === 'admin') {
+        document.getElementById('settingsMenuItem').classList.remove('d-none');
+        document.getElementById('cyclesMenuItem').classList.remove('d-none');
+    }
+
     const avatarBtn = document.getElementById('profileBtn');
 
     await populateFilters();
+
+    const cycles = await loadCycles();
+    const currentCycle = cycles.find(c => c.status === 'in_progress') || cycles[0];
+    const currentId = currentCycle ? currentCycle.id : '';
+    selectedCycleId = currentId;
+    populateCycleSwitcher(cycles, currentId);
+
     await refreshTree();
+
     refreshTeamList();
     refreshManagerList();
     initSearch();
@@ -181,7 +241,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         const name = document.getElementById('teamName').value;
         const resp = await fetch('/api/teams', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name}) });
         if (resp.ok) { document.getElementById('teamName').value = ''; refreshTeamList(); }
-        else { const err = await resp.json(); alert('Error: ' + (err.error || 'Failed to add')); }
+        else { const err = await resp.json(); showToast(err.error || 'Failed to add', 'error'); }
     });
 
     document.getElementById('managerForm').addEventListener('submit', async (e) => {
@@ -189,7 +249,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         const name = document.getElementById('managerName').value;
         const resp = await fetch('/api/managers', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name}) });
         if (resp.ok) { document.getElementById('managerName').value = ''; refreshManagerList(); }
-        else { const err = await resp.json(); alert('Error: ' + (err.error || 'Failed to add')); }
+        else { const err = await resp.json(); showToast(err.error || 'Failed to add', 'error'); }
     });
 
     document.getElementById('teamModal').addEventListener('show.bs.modal', refreshTeamList);

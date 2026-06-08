@@ -2,21 +2,26 @@ from flask_login import login_required
 
 from app.database import get_db
 from app.models import objective as objective_model
+from app.models import cycle as cycle_model
 from app.services.tree import build_tree
 from app.auth_utils import role_required
 
 
 @login_required
-def getTree(teamId=None, managerId=None):
+def getTree(teamId=None, managerId=None, cycleId=None):
     db = get_db()
-    roots = build_tree(db, teamId, managerId)
+    if not cycleId:
+        current = cycle_model.get_current(db)
+        if current:
+            cycleId = current['id']
+    roots = build_tree(db, teamId, managerId, cycleId)
     return {"tree": roots}
 
 
 @login_required
-def getObjectivesFlat():
+def getObjectivesFlat(cycleId=None):
     db = get_db()
-    return {"objectives": objective_model.get_all(db)}
+    return {"objectives": objective_model.get_all(db, cycleId)}
 
 
 @login_required

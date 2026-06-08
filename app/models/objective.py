@@ -1,10 +1,25 @@
 import uuid
 
 
-def get_all(db):
-    rows = db.execute(
-        'SELECT id, name, parent_id, team_id, manager_id, doc_link, position FROM objectives'
-    ).fetchall()
+def get_all(db, cycle_id=None):
+    if cycle_id:
+        rows = db.execute(
+            '''
+            WITH RECURSIVE descendants(id) AS (
+                SELECT id FROM objectives WHERE cycle_id = ?
+                UNION ALL
+                SELECT o.id FROM objectives o JOIN descendants d ON o.parent_id = d.id
+            )
+            SELECT o.id, o.name, o.parent_id, o.team_id, o.manager_id, o.doc_link, o.position, o.cycle_id
+            FROM objectives o JOIN descendants d ON o.id = d.id
+            ORDER BY o.position
+            ''',
+            (cycle_id,)
+        ).fetchall()
+    else:
+        rows = db.execute(
+            'SELECT id, name, parent_id, team_id, manager_id, doc_link, position, cycle_id FROM objectives ORDER BY position'
+        ).fetchall()
     return [_row_to_camel(dict(r)) for r in rows]
 
 
@@ -17,12 +32,13 @@ def _row_to_camel(d):
         'managerId': d['manager_id'],
         'docLink': d['doc_link'],
         'position': d['position'],
+        'cycleId': d['cycle_id'],
     }
 
 
 def get_by_id(db, obj_id):
     row = db.execute(
-        'SELECT id, name, parent_id, team_id, manager_id, doc_link, position FROM objectives WHERE id = ?',
+        'SELECT id, name, parent_id, team_id, manager_id, doc_link, position, cycle_id FROM objectives WHERE id = ?',
         (obj_id,)
     ).fetchone()
     return _row_to_camel(dict(row)) if row else None
@@ -31,24 +47,44 @@ def get_by_id(db, obj_id):
 def create(db, data):
     parent_id = data.get('parentId')
     if not parent_id:
-        existing = db.execute(
-            'SELECT id FROM objectives WHERE parent_id IS NULL'
-        ).fetchone()
+        cycle_id = data.get('cycleId')
+        if cycle_id:
+            existing = db.execute(
+                'SELECT id FROM objectives WHERE parent_id IS NULL AND cycle_id = ?',
+                (cycle_id,)
+            ).fetchone()
+        else:
+            existing = db.execute(
+                'SELECT id FROM objectives WHERE parent_id IS NULL AND cycle_id IS NULL'
+            ).fetchone()
         if existing:
             raise ValueError('A company-wide objective already exists. Only one root objective is allowed.')
-    max_pos = db.execute(
-        'SELECT COALESCE(MAX(position), -1) FROM objectives WHERE parent_id IS ?',
-        (parent_id,)
-    ).fetchone()[0]
+    if parent_id:
+        max_pos = db.execute(
+            'SELECT COALESCE(MAX(position), -1) FROM objectives WHERE parent_id = ?',
+            (parent_id,)
+        ).fetchone()[0]
+    else:
+        cycle_id = data.get('cycleId')
+        if cycle_id:
+            max_pos = db.execute(
+                'SELECT COALESCE(MAX(position), -1) FROM objectives WHERE parent_id IS NULL AND cycle_id = ?',
+                (cycle_id,)
+            ).fetchone()[0]
+        else:
+            max_pos = db.execute(
+                'SELECT COALESCE(MAX(position), -1) FROM objectives WHERE parent_id IS NULL AND cycle_id IS NULL'
+            ).fetchone()[0]
     obj_id = str(uuid.uuid4())
     team_id = data.get('teamId')
     manager_id = data.get('managerId')
     doc_link = data.get('docLink', '')
+    cycle_id = data.get('cycleId')
     db.execute(
-        'INSERT INTO objectives (id, name, parent_id, team_id, manager_id, doc_link, position) '
-        'VALUES (?,?,?,?,?,?,?)',
+        'INSERT INTO objectives (id, name, parent_id, team_id, manager_id, doc_link, position, cycle_id) '
+        'VALUES (?,?,?,?,?,?,?,?)',
         (obj_id, data['name'], parent_id,
-         team_id, manager_id, doc_link, max_pos + 1)
+         team_id, manager_id, doc_link, max_pos + 1, cycle_id)
     )
     db.commit()
 
@@ -64,15 +100,24 @@ def create(db, data):
         "position": max_pos + 1,
         "teamName": team['name'] if team else None,
         "managerName": manager['name'] if manager else None,
+        "cycleId": cycle_id,
     }
 
 
 def update(db, obj_id, data):
     if 'parentId' in data and not data['parentId']:
-        existing = db.execute(
-            'SELECT id FROM objectives WHERE parent_id IS NULL AND id != ?',
-            (obj_id,)
-        ).fetchone()
+        row = db.execute('SELECT cycle_id FROM objectives WHERE id = ?', (obj_id,)).fetchone()
+        cycle_id = row['cycle_id'] if row else None
+        if cycle_id:
+            existing = db.execute(
+                'SELECT id FROM objectives WHERE parent_id IS NULL AND id != ? AND cycle_id = ?',
+                (obj_id, cycle_id)
+            ).fetchone()
+        else:
+            existing = db.execute(
+                'SELECT id FROM objectives WHERE parent_id IS NULL AND id != ?',
+                (obj_id,)
+            ).fetchone()
         if existing:
             raise ValueError('A company-wide objective already exists. Only one root objective is allowed.')
     fields = []

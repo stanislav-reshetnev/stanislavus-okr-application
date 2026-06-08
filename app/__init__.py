@@ -120,6 +120,12 @@ def create_app():
         'reorderInitiatives': 'app.handlers.initiatives',
         'updateInitiative': 'app.handlers.initiatives',
         'deleteInitiative': 'app.handlers.initiatives',
+        'getSettings': 'app.handlers.settings',
+        'updateSettings': 'app.handlers.settings',
+        'listCycles': 'app.handlers.cycles',
+        'createCycle': 'app.handlers.cycles',
+        'updateCycle': 'app.handlers.cycles',
+        'updateCycleStatus': 'app.handlers.cycles',
     }
 
     def _resolve_fn(operation_id):

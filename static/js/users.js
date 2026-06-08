@@ -29,7 +29,7 @@ async function editUser(id) {
     const newRole = prompt('New role (view / edit / admin):');
     if (newRole === null) return;
     if (!['view', 'edit', 'admin'].includes(newRole)) {
-        alert('Invalid role. Use: view, edit, or admin');
+        showToast('Invalid role. Use: view, edit, or admin', 'error');
         return;
     }
 
@@ -54,7 +54,7 @@ async function regenerateToken(id) {
     });
     if (!resp.ok) {
         const err = await resp.json();
-        alert('Error: ' + (err.error || 'Failed to regenerate token'));
+        showToast(err.error || 'Failed to regenerate token', 'error');
         return;
     }
     refreshUserList();
@@ -66,7 +66,7 @@ function copyToken(id) {
     if (!user || !user.apiToken) return;
     if (navigator.clipboard) {
         navigator.clipboard.writeText(user.apiToken).then(() => {
-            alert('Token copied to clipboard');
+            showToast('Token copied to clipboard', 'success');
         }).catch(() => {
             prompt('Copy this token manually:', user.apiToken);
         });
@@ -81,7 +81,7 @@ function copyEmail(id) {
     if (!user || !user.email) return;
     if (navigator.clipboard) {
         navigator.clipboard.writeText(user.email).then(() => {
-            alert('Email copied to clipboard');
+            showToast('Email copied to clipboard', 'success');
         }).catch(() => {
             prompt('Copy this email manually:', user.email);
         });
@@ -95,7 +95,7 @@ async function deleteUser(id) {
     const resp = await fetch(`/api/users/${id}`, { method: 'DELETE' });
     if (!resp.ok) {
         const err = await resp.json();
-        alert('Error: ' + (err.error || 'Failed to delete'));
+        showToast(err.error || 'Failed to delete', 'error');
         return;
     }
     refreshUserList();

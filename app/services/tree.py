@@ -7,6 +7,7 @@ def _row_to_camel_obj(d):
         'managerId': d['manager_id'],
         'docLink': d['doc_link'],
         'position': d['position'],
+        'cycleId': d.get('cycle_id'),
         'children': [],
         'keyResults': [],
         'initiatives': [],
@@ -55,9 +56,30 @@ def _sort_children(tree):
     return tree
 
 
-def build_tree(db, team_filter=None, manager_filter=None):
+def _get_cycle_objective_ids(obj_dict, cycle_id):
+    root_ids = [
+        oid for oid, obj in obj_dict.items()
+        if not obj.get('parentId') and obj.get('cycleId') == cycle_id
+    ]
+    children_of = {}
+    for oid, obj in obj_dict.items():
+        pid = obj.get('parentId')
+        if pid:
+            children_of.setdefault(pid, []).append(oid)
+    ids = set(root_ids)
+    stack = list(root_ids)
+    while stack:
+        pid = stack.pop()
+        for cid in children_of.get(pid, []):
+            if cid not in ids:
+                ids.add(cid)
+                stack.append(cid)
+    return ids
+
+
+def build_tree(db, team_filter=None, manager_filter=None, cycle_id=None):
     objs = db.execute(
-        'SELECT id, name, parent_id, team_id, manager_id, doc_link, position FROM objectives'
+        'SELECT id, name, parent_id, team_id, manager_id, doc_link, position, cycle_id FROM objectives'
     ).fetchall()
     krs = db.execute('SELECT * FROM key_results').fetchall()
     initiatives = db.execute('SELECT * FROM initiatives ORDER BY objective_id, position').fetchall()
@@ -83,18 +105,29 @@ def build_tree(db, team_filter=None, manager_filter=None):
         if obj_id in obj_dict:
             obj_dict[obj_id]['initiatives'].append(inv_dict)
 
-    if team_filter or manager_filter:
-        return _sort_children(_build_filtered_tree(obj_dict, team_filter, manager_filter))
-
     for oid, obj in obj_dict.items():
         pid = obj.get('parentId')
         if pid and pid in obj_dict:
             obj_dict[pid]['children'].append(obj)
 
-    roots = [
-        obj for oid, obj in obj_dict.items()
-        if not obj.get('parentId') or obj['parentId'] not in obj_dict
-    ]
+    if cycle_id:
+        roots = [
+            obj for oid, obj in obj_dict.items()
+            if (not obj.get('parentId') or obj['parentId'] not in obj_dict)
+            and obj.get('cycleId') == cycle_id
+        ]
+    else:
+        roots = [
+            obj for oid, obj in obj_dict.items()
+            if not obj.get('parentId') or obj['parentId'] not in obj_dict
+        ]
+
+    if team_filter or manager_filter:
+        if cycle_id:
+            cycle_ids = _get_cycle_objective_ids(obj_dict, cycle_id)
+            obj_dict = {oid: obj for oid, obj in obj_dict.items() if oid in cycle_ids}
+        return _sort_children(_build_filtered_tree(obj_dict, team_filter, manager_filter))
+
     return _sort_children(roots)
 
 

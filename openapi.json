@@ -596,6 +596,16 @@
               "minLength": 1
             },
             "description": "Filter by manager ID"
+          },
+          {
+            "name": "cycleId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Filter by OKR cycle ID"
           }
         ],
         "responses": {
@@ -642,6 +652,17 @@
         "summary": "Get flat list of objectives",
         "description": "Returns all objectives as a flat (non-hierarchical) list.",
         "operationId": "getObjectivesFlat",
+        "parameters": [
+          {
+            "name": "cycleId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by cycle ID"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Flat list of objectives",
@@ -1144,6 +1165,157 @@
         "security": [{ "bearerAuth": [] }, { "sessionCookie": [] }]
       }
     },
+    "/api/settings": {
+      "get": {
+        "tags": ["Settings"],
+        "summary": "Get application settings",
+        "description": "Returns all application settings. Admin only.",
+        "operationId": "getSettings",
+        "responses": {
+          "200": { "description": "Settings object" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "bearerAuth": [] }, { "sessionCookie": [] }]
+      },
+      "put": {
+        "tags": ["Settings"],
+        "summary": "Update application settings",
+        "description": "Updates one or more application settings. Admin only.",
+        "operationId": "updateSettings",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Settings updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StatusResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "bearerAuth": [] }, { "sessionCookie": [] }]
+      }
+    },
+    "/api/cycles": {
+      "get": {
+        "tags": ["Cycles"],
+        "summary": "List all OKR cycles",
+        "description": "Returns all OKR cycles ordered by date. Admin only.",
+        "operationId": "listCycles",
+        "responses": {
+          "200": {
+            "description": "List of cycles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cycles": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Cycle" }
+                    }
+                  },
+                  "required": ["cycles"]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "bearerAuth": [] }, { "sessionCookie": [] }]
+      },
+      "post": {
+        "tags": ["Cycles"],
+        "summary": "Create a new OKR cycle",
+        "description": "Creates a new OKR cycle with auto-calculated dates. Admin only.",
+        "operationId": "createCycle",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateCycleRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Cycle created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Cycle" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "bearerAuth": [] }, { "sessionCookie": [] }]
+      }
+    },
+    "/api/cycles/{cycleId}": {
+      "put": {
+        "tags": ["Cycles"],
+        "summary": "Update an OKR cycle",
+        "description": "Updates name, dates, or cycle length of an OKR cycle. Admin only.",
+        "operationId": "updateCycle",
+        "parameters": [
+          {
+            "name": "cycleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateCycleRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Cycle updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Cycle" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        },
+        "security": [{ "bearerAuth": [] }, { "sessionCookie": [] }]
+      }
+    },
+    "/api/cycles/{cycleId}/status": {
+      "put": {
+        "tags": ["Cycles"],
+        "summary": "Update cycle status",
+        "description": "Changes the status of an OKR cycle (draft, in_progress, completed). Admin only.",
+        "operationId": "updateCycleStatus",
+        "parameters": [
+          {
+            "name": "cycleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateCycleStatusRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Cycle updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Cycle" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        },
+        "security": [{ "bearerAuth": [] }, { "sessionCookie": [] }]
+      }
+    },
     "/api/initiatives/{initiativeId}": {
       "put": {
         "tags": ["Initiatives"],
@@ -1414,6 +1586,10 @@
             "type": "integer",
             "description": "Sort order among siblings (0-based)",
             "minimum": 0
+          },
+          "cycleId": {
+            "type": "string",
+            "description": "Parent cycle ID for OKR cycle scoping"
           }
         },
         "required": [
@@ -1467,6 +1643,10 @@
             "type": "integer",
             "description": "Sort order among siblings (0-based)",
             "minimum": 0
+          },
+          "cycleId": {
+            "type": "string",
+            "description": "Parent cycle ID for OKR cycle scoping"
           },
           "teamName": {
             "type": "string",
@@ -1532,6 +1712,10 @@
             "type": "integer",
             "description": "Sort order among siblings (0-based)",
             "minimum": 0
+          },
+          "cycleId": {
+            "type": "string",
+            "description": "Parent cycle ID for OKR cycle scoping"
           },
           "teamName": {
             "type": "string",
@@ -1784,6 +1968,11 @@
             "type": "string",
             "description": "Link to documentation",
             "maxLength": 2000
+          },
+          "cycleId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Parent cycle ID"
           }
         },
         "required": [
@@ -2104,6 +2293,45 @@
         "required": [
           "items"
         ]
+      },
+      "Cycle": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "Primary key, UUID" },
+          "name": { "type": "string", "description": "Cycle name (e.g. Q2 2026)" },
+          "status": { "type": "string", "enum": ["draft", "in_progress", "completed"], "description": "Cycle status" },
+          "startDate": { "type": "string", "description": "Start date (ISO)" },
+          "endDate": { "type": "string", "description": "End date (ISO)" },
+          "cycleLength": { "type": "string", "enum": ["year", "quarter", "month"], "description": "Cycle length" },
+          "createdAt": { "type": "string", "description": "Creation timestamp" }
+        },
+        "required": ["id", "name", "status", "startDate", "endDate", "cycleLength"]
+      },
+      "CreateCycleRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "Cycle name", "minLength": 1 },
+          "startDate": { "type": "string", "format": "date", "description": "Start date (ISO, e.g. 2026-04-01)" },
+          "endDate": { "type": "string", "format": "date", "description": "End date (ISO, e.g. 2026-06-30)" },
+          "cycleLength": { "type": "string", "enum": ["year", "quarter", "month"], "description": "Cycle length", "default": "quarter" },
+          "status": { "type": "string", "enum": ["draft", "in_progress", "completed"], "description": "Initial status", "default": "draft" }
+        },
+        "required": ["name", "startDate", "endDate"]
+      },
+      "UpdateCycleStatusRequest": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["draft", "in_progress", "completed"], "description": "New status" }
+        },
+        "required": ["status"]
+      },
+      "UpdateCycleRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "Cycle name", "minLength": 1 },
+          "startDate": { "type": "string", "format": "date", "description": "Start date (ISO)" },
+          "endDate": { "type": "string", "format": "date", "description": "End date (ISO)" }
+        }
       }
     },
     "responses": {

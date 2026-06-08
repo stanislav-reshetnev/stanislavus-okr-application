@@ -1,5 +1,5 @@
 async function fillSelects() {
-    const [teams, managers, objectives] = await Promise.all([loadTeams(), loadManagers(), loadObjectivesFlat()]);
+    const [teams, managers, objectives] = await Promise.all([loadTeams(), loadManagers(), loadObjectivesFlat(selectedCycleId)]);
     const parentSelect = document.getElementById('objParent');
     const numbered = buildNumberedTree(objectives);
     const hasRoot = objectives.some(o => !o.parentId);
@@ -26,9 +26,9 @@ async function prepareObjForm() {
 
 async function editObjective(id) {
     if (!editMode) return;
-    const objectives = await loadObjectivesFlat();
+    const objectives = await loadObjectivesFlat(selectedCycleId);
     const obj = objectives.find(o => o.id === id);
-    if (!obj) { alert('Objective not found'); return; }
+    if (!obj) { showToast('Objective not found', 'error'); return; }
     document.getElementById('objId').value = obj.id;
     document.getElementById('objName').value = obj.name;
     document.getElementById('objModalLabel').textContent = 'Edit Objective';
@@ -67,7 +67,7 @@ async function addKR(objectiveId) {
 
 async function editKR(krId) {
     if (!editMode) return;
-    const tree = await loadTree(selectedTeamId, selectedManagerId);
+    const tree = await loadTree(selectedTeamId, selectedManagerId, selectedCycleId);
     let found = null;
     (function find(nodes) {
         for (let node of nodes) {
@@ -198,7 +198,7 @@ function copyCurlCode(elementId) {
     if (!text || text === '—') return;
     if (navigator.clipboard) {
         navigator.clipboard.writeText(text).then(() => {
-            alert('Curl code copied to clipboard');
+            showToast('Curl code copied to clipboard', 'success');
         }).catch(() => {
             prompt('Copy this code manually:', text);
         });
@@ -222,7 +222,7 @@ async function addInitiative(objectiveId) {
 
 async function editInitiative(initiativeId) {
     if (!editMode) return;
-    const tree = await loadTree(selectedTeamId, selectedManagerId);
+    const tree = await loadTree(selectedTeamId, selectedManagerId, selectedCycleId);
     let found = null;
     (function find(nodes) {
         for (let node of nodes) {
@@ -270,3 +270,104 @@ document.getElementById('krDetailModal').addEventListener('hide.bs.modal', funct
         document.body.focus();
     }
 });
+
+let settingsModalObj = null;
+let cyclesModalObj = null;
+
+async function showSettingsModal() {
+    if (!settingsModalObj) {
+        settingsModalObj = new bootstrap.Modal(document.getElementById('settingsModal'));
+    }
+    try {
+        const settings = await loadSettings();
+        document.getElementById('settingCycleLength').value = settings.cycle_length || 'quarter';
+        settingsModalObj.show();
+    } catch (e) {
+        showToast('Failed to load settings', 'error');
+    }
+}
+
+async function showCyclesModal() {
+    if (!cyclesModalObj) {
+        cyclesModalObj = new bootstrap.Modal(document.getElementById('cyclesModal'));
+    }
+    await refreshCycleList();
+    cyclesModalObj.show();
+}
+
+async function refreshCycleList() {
+    const cycles = await loadCycles();
+    const list = document.getElementById('cycleList');
+    const editingId = list.dataset.editingId || '';
+    list.innerHTML = cycles.map(c => {
+        const statusMap = { draft: 'Draft', in_progress: 'In Progress', completed: 'Completed' };
+        const canAdvance = c.status === 'draft';
+        const canComplete = c.status === 'in_progress';
+        if (c.id === editingId) {
+            return `<div class="list-group-item flex-column align-items-stretch" data-cycle-id="${c.id}">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <input type="text" class="form-control form-control-sm" id="editCycleName" value="${c.name}" placeholder="Name">
+                    <input type="date" class="form-control form-control-sm" id="editCycleStartDate" value="${c.startDate}" style="max-width:160px">
+                    <input type="date" class="form-control form-control-sm" id="editCycleEndDate" value="${c.endDate}" style="max-width:160px">
+                    <button class="btn btn-sm btn-primary" onclick="saveCycle('${c.id}')">Save</button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="cancelEditCycle()">Cancel</button>
+                </div>
+            </div>`;
+        }
+        return `<div class="list-group-item d-flex align-items-center justify-content-between">
+            <div>
+                <strong>${c.name}</strong>
+                <span class="status status-${c.status} ms-2">${statusMap[c.status] || c.status}</span>
+                <div class="text-secondary" style="font-size:0.8rem">${c.startDate} — ${c.endDate}</div>
+            </div>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-info" onclick="editCycle('${c.id}')" title="Edit">✎</button>
+                ${canAdvance ? `<button class="btn btn-outline-primary" onclick="handleUpdateCycleStatus('${c.id}','in_progress')">Start</button>` : ''}
+                ${canComplete ? `<button class="btn btn-outline-success" onclick="handleUpdateCycleStatus('${c.id}','completed')">Complete</button>` : ''}
+                ${c.status === 'in_progress' ? `<button class="btn btn-outline-secondary" onclick="handleUpdateCycleStatus('${c.id}','draft')">Revert</button>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+    populateCycleSwitcher(cycles, selectedCycleId);
+}
+
+function editCycle(cycleId) {
+    document.getElementById('cycleList').dataset.editingId = cycleId;
+    refreshCycleList();
+}
+
+function cancelEditCycle() {
+    delete document.getElementById('cycleList').dataset.editingId;
+    refreshCycleList();
+}
+
+async function saveCycle(cycleId) {
+    const name = document.getElementById('editCycleName').value.trim();
+    const startDate = document.getElementById('editCycleStartDate').value;
+    const endDate = document.getElementById('editCycleEndDate').value;
+    if (!name || !startDate || !endDate) return;
+    const data = { name, startDate, endDate };
+    try {
+        await apiUpdateCycle(cycleId, data);
+        delete document.getElementById('cycleList').dataset.editingId;
+        await refreshCycleList();
+    } catch (e) {
+        showToast(e.message || 'Failed to save cycle', 'error');
+    }
+}
+
+function populateCycleSwitcher(cycles, selectedId) {
+    const sel = document.getElementById('cycleSwitcher');
+    if (!sel) return;
+    const symbols = { draft: '🟡', in_progress: '🟢', completed: '✅' };
+    if (!cycles.length) {
+        sel.innerHTML = '<option value="" disabled selected>No cycles</option>';
+        return;
+    }
+    sel.innerHTML = cycles.map(c =>
+        `<option value="${c.id}">${symbols[c.status] || '○'} ${c.name}</option>`
+    ).join('');
+    if (selectedId && cycles.some(c => c.id === selectedId)) {
+        sel.value = selectedId;
+    }
+}

@@ -105,7 +105,7 @@ async function refreshTree(opts = {}) {
         treeContainer.style.display = 'none';
     }
 
-    const data = await loadTree(selectedTeamId, selectedManagerId);
+    const data = await loadTree(selectedTeamId, selectedManagerId, selectedCycleId);
     const filtered = filterTree(data, searchQuery);
 
     if (!skipSkeleton) {

@@ -9,12 +9,13 @@
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
 <body>
+    <div id="toastContainer"></div>
     <div class="container">
         <div class="dashboard-header">
             <div class="brand">
                 <img src="/static/favicon.svg" class="brand-icon" alt="OKR">
                 <h1 class="brand-title">{{ company_name }} OKR Tree</h1>
-                <a href="/api/docs" class="btn btn-outline-secondary btn-sm ms-3">📖 API Docs</a>
+                <a href="/api/docs" class="btn btn-outline-secondary btn-sm ms-1">📖 API Docs</a>
             </div>
             <div class="header-actions">
                 <button class="btn btn-primary btn-sm d-none" id="createObjBtn" data-bs-toggle="modal" data-bs-target="#objModal" onclick="prepareObjForm()">➕ Create Objective</button>
@@ -30,6 +31,8 @@
                     <button class="avatar-initials" id="profileBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Profile">👤</button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="#" onclick="showProfileModal()">✎ Edit Profile</a></li>
+                        <li id="settingsMenuItem" class="d-none"><a class="dropdown-item" href="#" onclick="showSettingsModal()">⚙ Settings</a></li>
+                        <li id="cyclesMenuItem" class="d-none"><a class="dropdown-item" href="#" onclick="showCyclesModal()">🗓 OKR Cycles</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="/logout">🚪 Sign Out</a></li>
                     </ul>
@@ -50,7 +53,8 @@
                 <button class="btn btn-outline-secondary btn-sm" id="searchToggleBtn" title="Search">🔍</button>
                 <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Search objectives and KRs..." style="display:none">
             </div>
-            <div class="btn-group btn-group-sm ms-auto" id="viewModeGroup" role="group">
+            <select id="cycleSwitcher" class="form-select form-select-sm ms-auto" onchange="onCycleChange(this)"></select>
+            <div class="btn-group btn-group-sm" id="viewModeGroup" role="group">
                 <button type="button" class="btn btn-outline-secondary active" data-mode="hierarchy" title="Hierarchical List">🔽 Hierarchy</button>
                 <button type="button" class="btn btn-outline-secondary" data-mode="tree" title="Tree View">🌳 Tree</button>
             </div>
@@ -352,6 +356,54 @@
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Change Password</button>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="settingsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">⚙ Settings</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="settingsForm" onsubmit="event.preventDefault();">
+                        <div class="mb-3">
+                            <label class="form-label">Default Cycle Length</label>
+                            <select class="form-select" id="settingCycleLength">
+                                <option value="year">Year</option>
+                                <option value="quarter" selected>Quarter</option>
+                                <option value="month">Month</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100" onclick="saveSettings()">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="cyclesModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">🗓 OKR Cycles</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="createCycleForm" class="row g-2 mb-3" onsubmit="event.preventDefault();">
+                        <div class="col-12">
+                            <input type="text" class="form-control form-control-sm" id="newCycleName" placeholder="Cycle name (e.g. Q2 2026)" required>
+                        </div>
+                        <div class="col">
+                            <label class="form-label" for="newCycleStartDate">Start Date</label>
+                            <input type="date" class="form-control form-control-sm" id="newCycleStartDate" required>
+                        </div>
+                        <div class="col">
+                            <label class="form-label" for="newCycleEndDate">End Date</label>
+                            <input type="date" class="form-control form-control-sm" id="newCycleEndDate" required>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-sm w-100" onclick="createNewCycle()">Create</button>
+                        </div>
+                    </form>
+                    <div id="cycleList" class="list-group"></div>
                 </div>
             </div>
         </div>
