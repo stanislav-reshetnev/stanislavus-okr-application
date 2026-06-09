@@ -26,13 +26,14 @@ function renderTree(nodes, parentElement, isRoot = false) {
         nodeDiv.dataset.objectId = node.id;
 
         const objNumber = (node.position ?? 0) + 1;
+        const objCode = node.parentId ? `O${objNumber}:` : 'O:';
         let nameHtml = '';
         const handleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
         if (node.keyResults && node.keyResults.length) {
             nameHtml += `<span class="caret" title="${node.name}">`;
-            nameHtml += `${handleHtml}<span class="objective-number">O${objNumber}:</span> <span class="objective-name" title="${node.name}">${node.name}</span></span>`;
+            nameHtml += `${handleHtml}<span class="objective-number">${objCode}</span> <span class="objective-name" title="${node.name}">${node.name}</span></span>`;
         } else {
-            nameHtml += `<span>${handleHtml}<span class="objective-number">O${objNumber}:</span> <span class="objective-name" title="${node.name}">${node.name}</span></span>`;
+            nameHtml += `<span>${handleHtml}<span class="objective-number">${objCode}</span> <span class="objective-name" title="${node.name}">${node.name}</span></span>`;
         }
         nodeDiv.innerHTML = nameHtml;
 
@@ -106,7 +107,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
             const krDiv = document.createElement('div');
             krDiv.className = 'kr-item';
             node.keyResults.forEach((kr) => {
-                const krNumber = `KR${objNumber}.${(kr.position ?? 0) + 1}`;
+                const krNumber = node.parentId ? `KR${objNumber}.${(kr.position ?? 0) + 1}` : `KR${(kr.position ?? 0) + 1}`;
                 const pct = calculateKRProgress(kr);
                 let krClass = '';
                 if ((kr.targetValue > 0 || kr.initialValue > 0) && pct >= 0) {
@@ -182,7 +183,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
             const initDiv = document.createElement('div');
             initDiv.className = 'kr-item';
             node.initiatives.forEach((init) => {
-                const initNumber = `I${objNumber}.${(init.position ?? 0) + 1}`;
+                const initNumber = node.parentId ? `I${objNumber}.${(init.position ?? 0) + 1}` : `I${(init.position ?? 0) + 1}`;
                 const initRow = document.createElement('div');
                 initRow.className = 'init-row';
                 initRow.dataset.initiativeId = init.id;
@@ -191,7 +192,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 const initStatus = init.status || 'backlog';
                 const initHandleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
                 initRow.innerHTML = `
-                    ${initHandleHtml}📋 <strong class="init-number">${initNumber}:</strong> <strong class="init-name">${init.name}</strong>
+                    ${initHandleHtml}📋 <strong class="init-number">${initNumber}:</strong> <strong class="init-name" title="${init.name}">${init.name}</strong>
                     <span class="status status-${initStatus}">${statusMap[initStatus] || initStatus}</span>`;
 
                 initRow.addEventListener('click', (e) => {
@@ -504,7 +505,8 @@ function renderTreeGraphic(nodes, container) {
         if (krClass) box.classList.add(krClass);
 
         const objIndex = (node.position ?? 0) + 1;
-        const objNumberSpan = `<span class="obj-number">O${objIndex}:</span>`;
+        const objCode = node.parentId ? `O${objIndex}:` : 'O:';
+        const objNumberSpan = `<span class="obj-number">${objCode}</span>`;
         let boxHtml = `<div class="objective-title">${objNumberSpan} ${node.name}`;
         if (node.docLink) {
             boxHtml += ` <a href="${node.docLink}" target="_blank" rel="noopener noreferrer" class="text-decoration-none" title="Open docs">🔗</a>`;

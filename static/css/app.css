@@ -531,17 +531,12 @@ body.edit-mode .drag-handle { display: inline; }
 
 .objective-name, .kr-name {
     display: inline-block;
-    max-width: 25vw;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     vertical-align: middle;
     min-width: 0;
     flex-shrink: 1;
-}
-body.edit-mode .objective-name,
-body.edit-mode .kr-name {
-    max-width: 20vw;
 }
 
 .objective-number {
@@ -670,11 +665,15 @@ body:not(.edit-mode) .kr-name { cursor: pointer; }
 .init-name {
     color: #0891b2;
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex-shrink: 1;
 }
 .init-what {
     font-size: 0.8rem;
     color: var(--text-secondary);
-    max-width: 20vw;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -684,7 +683,6 @@ body:not(.edit-mode) .kr-name { cursor: pointer; }
 .init-impact {
     font-size: 0.8rem;
     color: #0891b2;
-    max-width: 20vw;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
