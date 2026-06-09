@@ -47,8 +47,8 @@ function renderTree(nodes, parentElement, isRoot = false) {
             });
             objHandle.addEventListener('dragend', () => {
                 li.classList.remove('dragging');
-                document.querySelectorAll('.node.drop-before, .node.drop-after, .kr-row.drop-before, .kr-row.drop-after')
-                    .forEach(el => el.classList.remove('drop-before', 'drop-after'));
+                document.querySelectorAll('.node.drop-before, .node.drop-after, .node.drop-child, .kr-row.drop-before, .kr-row.drop-after')
+                    .forEach(el => el.classList.remove('drop-before', 'drop-after', 'drop-child'));
             });
         }
 
@@ -255,10 +255,19 @@ function onObjectiveDragOver(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    document.querySelectorAll('.node.drop-before, .node.drop-after')
-        .forEach(el => el.classList.remove('drop-before', 'drop-after'));
+    document.querySelectorAll('.node.drop-before, .node.drop-after, .node.drop-child')
+        .forEach(el => el.classList.remove('drop-before', 'drop-after', 'drop-child'));
 
     const li = e.currentTarget;
+    const childUl = li.querySelector(':scope > ul.tree');
+    const targetEl = e.target.nodeType === 1 ? e.target : e.target.parentElement;
+    const isChildHover = childUl && childUl.contains(targetEl) && targetEl.closest('li') === li;
+
+    if (isChildHover) {
+        li.classList.add('drop-child');
+        return;
+    }
+
     const rect = li.getBoundingClientRect();
     const insertAfter = e.clientY > rect.top + rect.height / 2;
     li.classList.toggle('drop-before', !insertAfter);
@@ -267,13 +276,14 @@ function onObjectiveDragOver(e) {
 
 function onObjectiveDragLeave(e) {
     const li = e.currentTarget;
-    li.classList.remove('drop-before', 'drop-after');
+    li.classList.remove('drop-before', 'drop-after', 'drop-child');
 }
 
-function onObjectiveDrop(e) {
+async function onObjectiveDrop(e) {
     e.preventDefault();
+    e.stopPropagation();
     const targetLi = e.currentTarget;
-    targetLi.classList.remove('drop-before', 'drop-after');
+    targetLi.classList.remove('drop-before', 'drop-after', 'drop-child');
 
     const raw = e.dataTransfer.getData('text/plain');
     if (!raw || !raw.startsWith('obj:')) return;
@@ -281,6 +291,34 @@ function onObjectiveDrop(e) {
     const targetId = targetLi.dataset.objectId;
     if (!draggedId || draggedId === targetId) return;
 
+    const childUl = targetLi.querySelector(':scope > ul.tree');
+    const targetEl = e.target.nodeType === 1 ? e.target : e.target.parentElement;
+    const isChildDrop = childUl && childUl.contains(targetEl) && targetEl.closest('li') === targetLi;
+
+    if (isChildDrop) {
+        // Drop on children area → insert as child
+        const oldLi = document.querySelector(`li[data-object-id="${draggedId}"]`);
+        if (oldLi) {
+            const oldIds = Array.from(oldLi.parentElement.querySelectorAll(':scope > .node[data-object-id]'))
+                .map(el => el.dataset.objectId).filter(id => id !== draggedId);
+            if (oldIds.length) {
+                await fetch('/api/objectives/reorder', {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({items: oldIds.map((id, i) => ({id, position: i}))})
+                });
+            }
+        }
+        await fetch(`/api/objectives/${draggedId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({parentId: targetId})
+        });
+        await refreshTree({ skipSkeleton: true });
+        return;
+    }
+
+    // Sibling insertion
     const ul = targetLi.parentElement;
     const siblings = Array.from(ul.querySelectorAll(':scope > .node[data-object-id]'));
     const rect = targetLi.getBoundingClientRect();
@@ -288,13 +326,41 @@ function onObjectiveDrop(e) {
     const ids = siblings.map(el => el.dataset.objectId);
 
     const fromIdx = ids.indexOf(draggedId);
-    if (fromIdx === -1) return;
-    ids.splice(fromIdx, 1);
+    if (fromIdx !== -1) {
+        ids.splice(fromIdx, 1);
+        const toIdx = ids.indexOf(targetId) + (insertAfter ? 1 : 0);
+        ids.splice(toIdx, 0, draggedId);
+        reorderObjectives(ids.map((id, i) => ({id, position: i})));
+        return;
+    }
+
+    // Cross-parent sibling move
+    const parentLi = ul.closest('li[data-object-id]');
+    const newParentId = parentLi ? parentLi.dataset.objectId : null;
+
+    const oldLi = document.querySelector(`li[data-object-id="${draggedId}"]`);
+    if (oldLi) {
+        const oldIds = Array.from(oldLi.parentElement.querySelectorAll(':scope > .node[data-object-id]'))
+            .map(el => el.dataset.objectId).filter(id => id !== draggedId);
+        if (oldIds.length) {
+            await fetch('/api/objectives/reorder', {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({items: oldIds.map((id, i) => ({id, position: i}))})
+            });
+        }
+    }
+
     const toIdx = ids.indexOf(targetId) + (insertAfter ? 1 : 0);
     ids.splice(toIdx, 0, draggedId);
+    const newItems = ids.map((id, i) => ({id, position: i}));
 
-    const items = ids.map((id, i) => ({id, position: i}));
-    reorderObjectives(items);
+    await fetch(`/api/objectives/${draggedId}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({parentId: newParentId})
+    });
+    await reorderObjectives(newItems);
 }
 
 // ── KR DnD ────────────────────────────────────────────────────────
@@ -322,6 +388,7 @@ function onKRDragLeave(e) {
 
 function onKRDrop(e) {
     e.preventDefault();
+    e.stopPropagation();
     const targetRow = e.currentTarget;
     targetRow.classList.remove('drop-before', 'drop-after');
 
@@ -374,6 +441,7 @@ function onInitiativeDragLeave(e) {
 
 function onInitiativeDrop(e) {
     e.preventDefault();
+    e.stopPropagation();
     const targetRow = e.currentTarget;
     targetRow.classList.remove('drop-before', 'drop-after');
 

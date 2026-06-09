@@ -120,6 +120,17 @@ def update(db, obj_id, data):
             ).fetchone()
         if existing:
             raise ValueError('A company-wide objective already exists. Only one root objective is allowed.')
+    if 'parentId' in data:
+        current = get_by_id(db, obj_id)
+        if current and current.get('parentId') != data['parentId']:
+            new_pid = data['parentId'] or None
+            db.execute('BEGIN IMMEDIATE')
+            max_pos = db.execute(
+                'SELECT COALESCE(MAX(position), -1) FROM objectives WHERE parent_id IS ?',
+                (new_pid,)
+            ).fetchone()[0]
+            data['position'] = max_pos + 1
+
     fields = []
     values = []
     key_map = {
@@ -143,6 +154,7 @@ def update(db, obj_id, data):
 
 
 def reorder(db, items):
+    db.execute('BEGIN IMMEDIATE')
     for item in items:
         db.execute('UPDATE objectives SET position = ? WHERE id = ?', (item['position'], item['id']))
     db.commit()

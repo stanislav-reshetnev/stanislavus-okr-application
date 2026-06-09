@@ -155,8 +155,7 @@ async function refreshTree(opts = {}) {
                 this.classList.toggle('caret-down');
                 const li = this.closest('li');
                 if (li) {
-                    const krBlock = li.querySelector('.kr-item');
-                    if (krBlock) krBlock.classList.toggle('active');
+                    li.querySelectorAll('.kr-item').forEach(el => el.classList.toggle('active'));
                 }
             });
         });
