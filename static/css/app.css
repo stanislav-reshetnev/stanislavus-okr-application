@@ -503,6 +503,13 @@ h1, h2, h3, h4, h5 {
     padding: 0.3rem 0.5rem;
     border-radius: var(--radius-sm);
     transition: all var(--transition);
+    overflow: hidden;
+}
+.node-content > span {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .dragging { opacity: 0.4; }
@@ -531,6 +538,7 @@ body.edit-mode .drag-handle { display: inline; }
 
 .objective-name, .kr-name {
     display: inline-block;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -608,11 +616,13 @@ body.edit-mode .drag-handle { display: inline; }
     align-items: center;
     gap: 0.4rem;
     flex-wrap: nowrap;
+    white-space: nowrap;
     margin-bottom: 0.15rem;
     padding: 0.2rem 0.4rem;
     border-radius: var(--radius-sm);
     transition: background var(--transition), border-color var(--transition);
     border: 2px solid transparent;
+    overflow: hidden;
 }
 .kr-row:nth-child(odd) {
     background: #fafbfc;
@@ -624,7 +634,7 @@ body:not(.edit-mode) .kr-row { cursor: default; }
 body:not(.edit-mode) .kr-row:hover { background: var(--primary-light); }
 body:not(.edit-mode) .kr-name { cursor: pointer; }
 
-.kr-row .progress { flex-shrink: 0; }
+.kr-row .progress { flex-shrink: 1; min-width: 0; }
 .kr-row .btn-sm { flex-shrink: 0; }
 
 .kr-number {
@@ -646,6 +656,7 @@ body:not(.edit-mode) .kr-name { cursor: pointer; }
     transition: background var(--transition), border-color var(--transition);
     border: 2px solid transparent;
     font-size: 0.88rem;
+    overflow: hidden;
 }
 .init-row:nth-child(odd) {
     background: #f1f8fe;
@@ -665,6 +676,7 @@ body:not(.edit-mode) .kr-name { cursor: pointer; }
 .init-name {
     color: #0891b2;
     font-weight: 600;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
