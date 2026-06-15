@@ -177,9 +177,16 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     await populateFilters();
 
-    const cycles = await loadCycles();
-    const currentCycle = cycles.find(c => c.status === 'in_progress') || cycles[0];
-    const currentId = currentCycle ? currentCycle.id : '';
+    let cycles, currentId;
+    try {
+        cycles = await loadCycles();
+        const currentCycle = cycles.find(c => c.status === 'in_progress') || cycles[0];
+        currentId = currentCycle ? currentCycle.id : '';
+    } catch {
+        cycles = [];
+        currentId = '';
+        showToast('Failed to load cycles', 'error');
+    }
     selectedCycleId = currentId;
     populateCycleSwitcher(cycles, currentId);
 

@@ -1206,7 +1206,7 @@
       "get": {
         "tags": ["Cycles"],
         "summary": "List all OKR cycles",
-        "description": "Returns all OKR cycles ordered by date. Admin only.",
+        "description": "Returns all OKR cycles ordered by date. All authenticated users.",
         "operationId": "listCycles",
         "responses": {
           "200": {

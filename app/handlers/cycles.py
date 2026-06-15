@@ -6,7 +6,6 @@ from app.auth_utils import role_required
 
 
 @login_required
-@role_required('admin')
 def listCycles():
     db = get_db()
     return {'cycles': cycle_model.get_all(db)}
