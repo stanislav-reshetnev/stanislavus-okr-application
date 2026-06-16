@@ -37,12 +37,12 @@ async function editObjective(id) {
     document.getElementById('objTeam').value = obj.teamId || '';
     document.getElementById('objManager').value = obj.managerId || '';
     document.getElementById('objDocLink').value = obj.docLink || '';
-    new bootstrap.Modal(document.getElementById('objModal')).show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('objModal')).show();
 }
 
 async function deleteObjective(id) {
     if (!editMode) return;
-    if (!confirm('Delete objective with all sub-objectives and their KRs?')) return;
+    if (!await showConfirmModal('Delete objective with all sub-objectives and their KRs?')) return;
     await fetch(`/api/objectives/${id}`, { method: 'DELETE' });
     refreshTree();
 }
@@ -59,10 +59,11 @@ async function addKR(objectiveId) {
     document.getElementById('krDocLink').value = '';
     document.getElementById('krDescription').value = '';
     document.getElementById('krConfidence').value = 'medium';
-    document.getElementById('krCurlSnippet').textContent = '';
+    const snippetEl = document.getElementById('krCurlSnippet');
+    if (snippetEl) snippetEl.textContent = '';
     const addWarning = document.getElementById('krApiWarning');
     if (addWarning) addWarning.classList.add('d-none');
-    new bootstrap.Modal(document.getElementById('krModal')).show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('krModal')).show();
 }
 
 async function editKR(krId) {
@@ -115,7 +116,7 @@ async function editKR(krId) {
   ${appHost}/api/keyresults/${found.id}`;
     document.getElementById('krCurlSnippet').textContent = curl;
 
-    new bootstrap.Modal(document.getElementById('krModal')).show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('krModal')).show();
 }
 
 function showKRDetail(kr, krNumber) {
@@ -167,7 +168,7 @@ function showKRDetail(kr, krNumber) {
     } else {
         linkEl.style.display = 'none';
     }
-    new bootstrap.Modal(document.getElementById('krDetailModal')).show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('krDetailModal')).show();
 }
 
 function showInitiativeDetail(init, initNumber, objCode, objName) {
@@ -189,21 +190,21 @@ function showInitiativeDetail(init, initNumber, objCode, objName) {
     } else {
         linkEl.style.display = 'none';
     }
-    new bootstrap.Modal(document.getElementById('initiativeDetailModal')).show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('initiativeDetailModal')).show();
 }
 
-function copyCurlCode(elementId) {
+async function copyCurlCode(elementId) {
     const el = document.getElementById(elementId || 'krCurlSnippet');
     const text = el.textContent;
     if (!text || text === '—') return;
     if (navigator.clipboard) {
         navigator.clipboard.writeText(text).then(() => {
             showToast('Curl code copied to clipboard', 'success');
-        }).catch(() => {
-            prompt('Copy this code manually:', text);
+        }).catch(async () => {
+            await showPromptModal('Copy this code manually:', text);
         });
     } else {
-        prompt('Copy this code manually:', text);
+        await showPromptModal('Copy this code manually:', text);
     }
 }
 
@@ -216,8 +217,9 @@ async function addInitiative(objectiveId) {
     document.getElementById('initiativeImpact').value = '';
     document.getElementById('initiativeDocLink').value = '';
     document.getElementById('initiativeStatus').value = 'backlog';
-    document.getElementById('initiativeCurlSnippet').textContent = '';
-    new bootstrap.Modal(document.getElementById('initiativeModal')).show();
+    const snippetEl = document.getElementById('initiativeCurlSnippet');
+    if (snippetEl) snippetEl.textContent = '';
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('initiativeModal')).show();
 }
 
 async function editInitiative(initiativeId) {
@@ -247,20 +249,21 @@ async function editInitiative(initiativeId) {
   -H 'Content-Type: application/json' \
   -d '{"status": "in_progress"}' \
   ${appHost}/api/initiatives/${found.id}`;
-    document.getElementById('initiativeCurlSnippet').textContent = curl;
-    new bootstrap.Modal(document.getElementById('initiativeModal')).show();
+    const snippetEl = document.getElementById('initiativeCurlSnippet');
+    if (snippetEl) snippetEl.textContent = curl;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('initiativeModal')).show();
 }
 
 async function deleteInitiative(initiativeId) {
     if (!editMode) return;
-    if (!confirm('Delete this Initiative?')) return;
+    if (!await showConfirmModal('Delete this Initiative?')) return;
     await fetch(`/api/initiatives/${initiativeId}`, { method: 'DELETE' });
     refreshTree();
 }
 
 async function deleteKR(krId) {
     if (!editMode) return;
-    if (!confirm('Delete this Key Result?')) return;
+    if (!await showConfirmModal('Delete this Key Result?')) return;
     await fetch(`/api/keyresults/${krId}`, { method: 'DELETE' });
     refreshTree();
 }
@@ -271,28 +274,19 @@ document.getElementById('krDetailModal').addEventListener('hide.bs.modal', funct
     }
 });
 
-let settingsModalObj = null;
-let cyclesModalObj = null;
-
 async function showSettingsModal() {
-    if (!settingsModalObj) {
-        settingsModalObj = new bootstrap.Modal(document.getElementById('settingsModal'));
-    }
     try {
         const settings = await loadSettings();
         document.getElementById('settingCycleLength').value = settings.cycle_length || 'quarter';
-        settingsModalObj.show();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).show();
     } catch (e) {
         showToast('Failed to load settings', 'error');
     }
 }
 
 async function showCyclesModal() {
-    if (!cyclesModalObj) {
-        cyclesModalObj = new bootstrap.Modal(document.getElementById('cyclesModal'));
-    }
     await refreshCycleList();
-    cyclesModalObj.show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('cyclesModal')).show();
 }
 
 async function refreshCycleList() {

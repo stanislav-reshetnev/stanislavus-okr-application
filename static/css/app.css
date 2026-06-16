@@ -134,6 +134,12 @@ h1, h2, h3, h4, h5 {
 }
 
 .btn-primary {
+    --bs-btn-bg: var(--primary);
+    --bs-btn-border-color: var(--primary);
+    --bs-btn-hover-bg: var(--primary-hover);
+    --bs-btn-hover-border-color: var(--primary-hover);
+    --bs-btn-active-bg: var(--primary-hover);
+    --bs-btn-active-border-color: var(--primary-hover);
     background: var(--primary);
     color: white;
     border-color: var(--primary);
@@ -964,6 +970,7 @@ body:not(.edit-mode) .init-name {
 .modal-body {
     padding: 1.25rem;
 }
+
 
 #objModal .modal-dialog,
 #krModal .modal-dialog,

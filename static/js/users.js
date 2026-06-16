@@ -23,10 +23,10 @@ async function refreshUserList() {
 }
 
 async function editUser(id) {
-    const newPassword = prompt('New password (leave empty to keep current):');
+    const newPassword = await showPromptModal('New password (leave empty to keep current):');
     if (newPassword === null) return;
 
-    const newRole = prompt('New role (view / edit / admin):');
+    const newRole = await showPromptModal('New role (view / edit / admin):');
     if (newRole === null) return;
     if (!['view', 'edit', 'admin'].includes(newRole)) {
         showToast('Invalid role. Use: view, edit, or admin', 'error');
@@ -46,7 +46,7 @@ async function editUser(id) {
 }
 
 async function regenerateToken(id) {
-    if (!confirm('Regenerate API token for this user? The old token will stop working immediately.')) return;
+    if (!await showConfirmModal('Regenerate API token for this user? The old token will stop working immediately.')) return;
     const resp = await fetch(`/api/users/${id}`, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
@@ -60,38 +60,38 @@ async function regenerateToken(id) {
     refreshUserList();
 }
 
-function copyToken(id) {
+async function copyToken(id) {
     const users = JSON.parse(document.getElementById('userList').dataset.users || '[]');
     const user = users.find(u => u.id === id);
     if (!user || !user.apiToken) return;
     if (navigator.clipboard) {
         navigator.clipboard.writeText(user.apiToken).then(() => {
             showToast('Token copied to clipboard', 'success');
-        }).catch(() => {
-            prompt('Copy this token manually:', user.apiToken);
+        }).catch(async () => {
+            await showPromptModal('Copy this token manually:', user.apiToken);
         });
     } else {
-        prompt('Copy this token manually:', user.apiToken);
+        await showPromptModal('Copy this token manually:', user.apiToken);
     }
 }
 
-function copyEmail(id) {
+async function copyEmail(id) {
     const users = JSON.parse(document.getElementById('userList').dataset.users || '[]');
     const user = users.find(u => u.id === id);
     if (!user || !user.email) return;
     if (navigator.clipboard) {
         navigator.clipboard.writeText(user.email).then(() => {
             showToast('Email copied to clipboard', 'success');
-        }).catch(() => {
-            prompt('Copy this email manually:', user.email);
+        }).catch(async () => {
+            await showPromptModal('Copy this email manually:', user.email);
         });
     } else {
-        prompt('Copy this email manually:', user.email);
+        await showPromptModal('Copy this email manually:', user.email);
     }
 }
 
 async function deleteUser(id) {
-    if (!confirm('Delete this user?')) return;
+    if (!await showConfirmModal('Delete this user?')) return;
     const resp = await fetch(`/api/users/${id}`, { method: 'DELETE' });
     if (!resp.ok) {
         const err = await resp.json();
@@ -105,5 +105,5 @@ function showProfileModal() {
     document.getElementById('profileEmail').textContent = currentUser.email;
     document.getElementById('profileRole').textContent = currentUser.role;
     document.getElementById('profileForm').reset();
-    new bootstrap.Modal(document.getElementById('profileModal')).show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('profileModal')).show();
 }

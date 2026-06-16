@@ -11,14 +11,14 @@ async function refreshTeamList() {
 }
 
 async function editTeam(id) {
-    const newName = prompt('New team name:', document.getElementById(`team-name-${id}`).textContent);
+    const newName = await showPromptModal('New team name:', document.getElementById(`team-name-${id}`).textContent);
     if (!newName) return;
     await fetch(`/api/teams/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: newName}) });
     refreshTeamList(); refreshTree();
 }
 
 async function deleteTeam(id) {
-    if (!confirm('Delete team? Objectives will lose their team association.')) return;
+    if (!await showConfirmModal('Delete team? Objectives will lose their team association.')) return;
     await fetch(`/api/teams/${id}`, { method: 'DELETE' });
     refreshTeamList(); refreshTree();
 }
@@ -36,14 +36,14 @@ async function refreshManagerList() {
 }
 
 async function editManager(id) {
-    const newName = prompt('New manager name:', document.getElementById(`manager-name-${id}`).textContent);
+    const newName = await showPromptModal('New manager name:', document.getElementById(`manager-name-${id}`).textContent);
     if (!newName) return;
     await fetch(`/api/managers/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: newName}) });
     refreshManagerList(); refreshTree();
 }
 
 async function deleteManager(id) {
-    if (!confirm('Delete manager? Objectives will lose their manager association.')) return;
+    if (!await showConfirmModal('Delete manager? Objectives will lose their manager association.')) return;
     await fetch(`/api/managers/${id}`, { method: 'DELETE' });
     refreshManagerList(); refreshTree();
 }
