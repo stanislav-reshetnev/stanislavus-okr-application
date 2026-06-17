@@ -1,3 +1,9 @@
+function highlightText(text, query) {
+    if (!query) return text;
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark class="search-highlight">$1</mark>');
+}
+
 function renderTree(nodes, parentElement, isRoot = false) {
     const ul = document.createElement('ul');
     ul.className = 'tree';
@@ -29,11 +35,12 @@ function renderTree(nodes, parentElement, isRoot = false) {
         const objCode = node.parentId ? `O${objNumber}:` : 'O:';
         let nameHtml = '';
         const handleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
+        const hlName = highlightText(node.name, searchQuery);
         if (node.keyResults && node.keyResults.length) {
             nameHtml += `<span class="caret" title="${node.name}">`;
-            nameHtml += `${handleHtml}<span class="objective-number">${objCode}</span> <span class="objective-name" title="${node.name}">${node.name}</span></span>`;
+            nameHtml += `${handleHtml}<span class="objective-number">${objCode}</span> <span class="objective-name" title="${node.name}">${hlName}</span></span>`;
         } else {
-            nameHtml += `<span>${handleHtml}<span class="objective-number">${objCode}</span> <span class="objective-name" title="${node.name}">${node.name}</span></span>`;
+            nameHtml += `<span>${handleHtml}<span class="objective-number">${objCode}</span> <span class="objective-name" title="${node.name}">${hlName}</span></span>`;
         }
         nodeDiv.innerHTML = nameHtml;
 
@@ -148,7 +155,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 const confVal = kr.confidence || 'medium';
                 const confLabel = confVal === 'medium' ? 'Med' : confVal.charAt(0).toUpperCase() + confVal.slice(1);
                 krRow.innerHTML = `
-                    ${krHandleHtml}📊 <strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${kr.name}</strong> (${kr.currentValue} / ${kr.targetValue} ${kr.unit})
+                    ${krHandleHtml}📊 <strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${highlightText(kr.name, searchQuery)}</strong> (${kr.currentValue} / ${kr.targetValue} ${kr.unit})
                     <div class="progress" title="${progressTitle.replace(/"/g, '&quot;')}"><div class="progress-bar ${pctClass}" style="width:${pct === -1 ? 100 : pct}%">${pct === -1 ? 'N/A' : Math.round(pct) + '%'}</div></div>${robotIcon}<span class="cs cs-${confVal}" title="Confidence Score">${confLabel}</span>`;
 
                 // KR drag handle events
@@ -202,7 +209,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 const initStatus = init.status || 'backlog';
                 const initHandleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
                 initRow.innerHTML = `
-                    ${initHandleHtml}📋 <strong class="init-number">${initNumber}:</strong> <strong class="init-name" title="${init.name}">${init.name}</strong>
+                    ${initHandleHtml}📋 <strong class="init-number">${initNumber}:</strong> <strong class="init-name" title="${init.name}">${highlightText(init.name, searchQuery)}</strong>
                     <span class="status status-${initStatus}">${statusMap[initStatus] || initStatus}</span>`;
 
                 initRow.addEventListener('click', (e) => {
@@ -517,7 +524,7 @@ function renderTreeGraphic(nodes, container) {
         const objIndex = (node.position ?? 0) + 1;
         const objCode = node.parentId ? `O${objIndex}:` : 'O:';
         const objNumberSpan = `<span class="obj-number">${objCode}</span>`;
-        let boxHtml = `<div class="objective-title">${objNumberSpan} ${node.name}`;
+        let boxHtml = `<div class="objective-title">${objNumberSpan} ${highlightText(node.name, searchQuery)}`;
         if (node.docLink) {
             boxHtml += ` <a href="${node.docLink}" target="_blank" rel="noopener noreferrer" class="text-decoration-none" title="Open docs">🔗</a>`;
         }
@@ -533,13 +540,13 @@ function renderTreeGraphic(nodes, container) {
             node.keyResults.forEach(kr => {
                 const pct = calculateKRProgress(kr);
                 const statusIcon = pct >= 100 ? '✅' : '📊';
-                popoverParts.push(`<div class="mb-1">${statusIcon} <strong>${kr.name}</strong>: ${kr.currentValue} → ${kr.targetValue} ${kr.unit} (${Math.round(pct)}%)</div>`);
+                popoverParts.push(`<div class="mb-1">${statusIcon} <strong>${highlightText(kr.name, searchQuery)}</strong>: ${kr.currentValue} → ${kr.targetValue} ${kr.unit} (${Math.round(pct)}%)</div>`);
             });
         }
         if (node.initiatives && node.initiatives.length) {
             popoverParts.push(`<hr class="my-1" style="border-color:#e2e8f0"><div class="mb-1" style="color:#0891b2;font-weight:600;font-size:0.75rem">INITIATIVES</div>`);
             node.initiatives.forEach(init => {
-                popoverParts.push(`<div class="mb-1">📋 <strong>${init.name}</strong></div>`);
+                popoverParts.push(`<div class="mb-1">📋 <strong>${highlightText(init.name, searchQuery)}</strong></div>`);
             });
         }
         if (popoverParts.length) {

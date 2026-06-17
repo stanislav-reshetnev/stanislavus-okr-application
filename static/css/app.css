@@ -553,6 +553,12 @@ body.edit-mode .drag-handle { display: inline; }
 .init-row.drop-before { border-top-color: var(--primary); }
 .init-row.drop-after { border-bottom-color: var(--primary); }
 
+mark.search-highlight {
+    background-color: #fef08a;
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
 .objective-name, .kr-name {
     display: inline-block;
     max-width: 100%;

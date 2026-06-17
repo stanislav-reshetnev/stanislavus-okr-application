@@ -62,30 +62,6 @@ async function reorderInitiatives(items) {
     await refreshTree({ skipSkeleton: true });
 }
 
-function filterTree(nodes, query) {
-    if (!query) return nodes;
-    const q = query.toLowerCase();
-    return nodes.reduce((acc, node) => {
-        const nameMatch = node.name.toLowerCase().includes(q);
-        const filteredKRs = nameMatch || !node.keyResults
-            ? node.keyResults
-            : node.keyResults.filter(kr => kr.name.toLowerCase().includes(q));
-        const krMatch = !nameMatch && filteredKRs && filteredKRs.length > 0;
-        const filteredInits = nameMatch || !node.initiatives
-            ? node.initiatives
-            : node.initiatives.filter(i => i.name.toLowerCase().includes(q));
-        const initMatch = !nameMatch && filteredInits && filteredInits.length > 0;
-        const filteredChildren = node.children ? filterTree(node.children, q) : [];
-        const childrenMatch = filteredChildren.length > 0;
-        if (nameMatch || krMatch || initMatch || childrenMatch) {
-            const resultKRs = (nameMatch || krMatch) ? filteredKRs : node.keyResults;
-            const resultInits = (nameMatch || initMatch) ? filteredInits : node.initiatives;
-            acc.push({ ...node, keyResults: resultKRs, initiatives: resultInits, children: filteredChildren });
-        }
-        return acc;
-    }, []);
-}
-
 async function refreshTree(opts = {}) {
     const { skipSkeleton, ensureExpanded } = opts;
     const treeContainer = document.getElementById('tree');
@@ -110,7 +86,19 @@ async function refreshTree(opts = {}) {
     }
 
     const data = await loadTree(selectedTeamId, selectedManagerId, selectedCycleId);
-    const filtered = filterTree(data, searchQuery);
+    if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        (function walk(nodes) {
+            for (const node of nodes) {
+                const nameMatch = node.name.toLowerCase().includes(q);
+                const krMatch = node.keyResults?.some(kr => kr.name.toLowerCase().includes(q));
+                const initMatch = node.initiatives?.some(i => i.name.toLowerCase().includes(q));
+                if (nameMatch || krMatch || initMatch) expandedObjectives.add(String(node.id));
+                if (node.children) walk(node.children);
+            }
+        })(data);
+    }
+    const filtered = data;
 
     if (!skipSkeleton) {
         if (skeleton) skeleton.style.display = 'none';
