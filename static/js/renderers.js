@@ -88,6 +88,16 @@ function renderTree(nodes, parentElement, isRoot = false) {
             btnDel.textContent = '🗑️';
             btnDel.onclick = (e) => { e.stopPropagation(); deleteObjective(node.id); };
             nodeDiv.appendChild(btnDel);
+            const btnObj = document.createElement('button');
+            btnObj.className = 'btn btn-outline-warning btn-sm py-0';
+            btnObj.textContent = '+Obj';
+            btnObj.title = 'Add Sub-Objective';
+            btnObj.onclick = (e) => {
+                e.stopPropagation();
+                prepareObjForm(node.id, node.teamId, node.managerId);
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('objModal')).show();
+            };
+            nodeDiv.appendChild(btnObj);
             const btnKR = document.createElement('button');
             btnKR.className = 'btn btn-outline-success btn-sm py-0';
             btnKR.textContent = '+KR';

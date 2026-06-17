@@ -17,11 +17,14 @@ async function fillSelects() {
     document.getElementById('objDocLink').value = '';
 }
 
-async function prepareObjForm() {
+async function prepareObjForm(parentId, teamId, managerId) {
     document.getElementById('objForm').reset();
     document.getElementById('objId').value = '';
     document.getElementById('objModalLabel').textContent = 'Create Objective';
     await fillSelects();
+    if (parentId) document.getElementById('objParent').value = parentId;
+    if (teamId) document.getElementById('objTeam').value = teamId;
+    if (managerId) document.getElementById('objManager').value = managerId;
 }
 
 async function editObjective(id) {
