@@ -87,7 +87,7 @@ function filterTree(nodes, query) {
 }
 
 async function refreshTree(opts = {}) {
-    const { skipSkeleton } = opts;
+    const { skipSkeleton, ensureExpanded } = opts;
     const treeContainer = document.getElementById('tree');
     const skeleton = document.getElementById('loadingSkeleton');
     const emptyState = document.getElementById('emptyState');
@@ -97,6 +97,10 @@ async function refreshTree(opts = {}) {
         const li = el.closest('li[data-object-id]');
         if (li) expandedObjectives.add(li.dataset.objectId);
     });
+    if (ensureExpanded) {
+        const ids = Array.isArray(ensureExpanded) ? ensureExpanded : [ensureExpanded];
+        ids.forEach(id => expandedObjectives.add(String(id)));
+    }
 
     if (!skipSkeleton) {
         treeContainer.innerHTML = '';

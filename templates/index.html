@@ -374,7 +374,7 @@
             <div class="modal-content">
                 <div class="modal-header"><h5 class="modal-title">⚙ Settings</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <form id="settingsForm" onsubmit="event.preventDefault();">
+                    <form id="settingsForm">
                         <div class="mb-3">
                             <label class="form-label">Default Cycle Length</label>
                             <select class="form-select" id="settingCycleLength">
@@ -383,7 +383,7 @@
                                 <option value="month">Month</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100" onclick="saveSettings()">Save</button>
+                        <button type="submit" class="btn btn-primary w-100">Save</button>
                     </form>
                 </div>
             </div>
@@ -395,7 +395,7 @@
             <div class="modal-content">
                 <div class="modal-header"><h5 class="modal-title">🗓 OKR Cycles</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <form id="createCycleForm" class="row g-2 mb-3" onsubmit="event.preventDefault();">
+                    <form id="createCycleForm" class="row g-2 mb-3">
                         <div class="col-12">
                             <input type="text" class="form-control form-control-sm" id="newCycleName" placeholder="Cycle name (e.g. Q2 2026)" required>
                         </div>
@@ -408,7 +408,7 @@
                             <input type="date" class="form-control form-control-sm" id="newCycleEndDate" required>
                         </div>
                         <div class="col-12">
-                            <button type="submit" class="btn btn-primary btn-sm w-100" onclick="createNewCycle()">Create</button>
+                            <button type="submit" class="btn btn-primary btn-sm w-100">Create</button>
                         </div>
                     </form>
                     <div id="cycleList" class="list-group"></div>

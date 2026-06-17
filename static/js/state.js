@@ -109,6 +109,17 @@ function buildNumberedTree(objectives) {
     return result;
 }
 
+function setButtonLoading(btn, loading) {
+    if (loading) {
+        btn._originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>' + btn._originalHtml;
+    } else {
+        btn.disabled = false;
+        btn.innerHTML = btn._originalHtml || btn.innerHTML;
+    }
+}
+
 function calculateKRProgress(kr) {
     const init = parseFloat(kr.initialValue) || 0;
     const curr = parseFloat(kr.currentValue) || 0;
