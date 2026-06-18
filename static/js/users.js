@@ -50,7 +50,7 @@ async function regenerateToken(id) {
     const resp = await fetch(`/api/users/${id}`, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({regenerate_token: true})
+        body: JSON.stringify({regenerateToken: true})
     });
     if (!resp.ok) {
         const err = await resp.json();
