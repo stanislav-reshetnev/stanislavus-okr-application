@@ -129,6 +129,61 @@ Set `FLASK_ENV=development` for Flask debug mode (auto-reload disabled — resta
 
 Data is persisted in `./data/okr.db` (bind mount at `/data`).
 
+## Testing
+
+The project includes Playwright-based E2E tests that run in a dedicated Docker Compose profile. The test suite validates authentication flows, edit mode, objective/KR/initiative CRUD, and more.
+
+**Prerequisites**: Docker and Docker Compose.
+
+```bash
+# Run all tests
+docker compose --profile test up --build --abort-on-container-exit --exit-code-from test
+```
+
+This spins up two additional services:
+- **`app-test`** — the Flask app with a temporary SQLite database (`/tmp/test.db`) and fixed secret key for test reproducibility.
+- **`test`** — Playwright (Python) worker that runs `pytest` against `app-test`. Browsers (Chromium, Firefox, WebKit) are bundled in the Playwright Docker image.
+
+**What happens:**
+1. Stale `test-results/` artifacts are cleaned automatically.
+2. `app-test` is polled until it responds (up to 60s).
+3. Tests execute — failures produce screenshots and Playwright traces.
+4. A self-contained HTML report is generated at `test-results/report.html` with embedded screenshots.
+5. The process exits with the test runner's exit code.
+
+**Test structure** under `tests/`:
+
+| File | Contents |
+|------|----------|
+| `conftest.py` | Fixtures: `app_page` (UI login), `anon_page` (no session), `api` (HTTP client for data seeding + LIFO cleanup) |
+| `helpers.py` | `ApiClient` — HTTP helper for seeding/cleaning test data |
+| `e2e/test_auth.py` | Setup wizard, login, view-role restrictions, logout |
+| `e2e/test_edit_mode.py` | Action button visibility in edit mode |
+| `e2e/test_objectives.py` | Create, rename, and delete objectives |
+| `e2e/test_key_results.py` | Add KR with auto-expand |
+| `e2e/test_initiatives.py` | Add Initiative with auto-expand |
+| `e2e/test_cycle_switcher.py` | Switch cycles, verify tree updates |
+| `e2e/test_filter.py` | Filter by team and manager |
+| `e2e/test_search.py` | Search highlighting |
+| `e2e/test_sub_objective.py` | +Obj button creates child with team/manager inheritance |
+| `e2e/test_drag_drop.py` | Drag-and-drop reorder of objectives |
+| `e2e/test_cycle_status.py` | Cycle status transitions (draft → in_progress → completed) |
+| `e2e/test_settings.py` | Change default cycle length |
+| `e2e/test_users.py` | User CRUD via Users modal |
+| `e2e/test_profile.py` | Change password via Edit Profile |
+
+**Individual test execution** — pass additional `pytest` arguments via the `command` override:
+
+```bash
+docker compose --profile test run --rm test pytest tests/e2e/test_auth.py -v --tb=long
+```
+
+**Artifacts** are written to `test-results/` (bound to the host for inspection):
+
+- `report.html` — full HTML report with embedded failure screenshots
+- `{test_name}_{phase}.png` — standalone screenshots per failed phase
+- `{test_name}_trace.zip` — Playwright trace files for debugging in `https://trace.playwright.dev`
+
 ## Configuration
 
 | Variable | Default       | Description |

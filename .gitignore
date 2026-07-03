@@ -4,3 +4,7 @@
 
 .env
 data/*
+
+# Test artifacts
+test-results/
+.cache/

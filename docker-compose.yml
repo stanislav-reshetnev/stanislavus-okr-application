@@ -22,3 +22,28 @@ services:
     depends_on:
       - app
     restart: unless-stopped
+
+  app-test:
+    build: .
+    profiles: ["test"]
+    environment:
+      - OKR_DB_PATH=/tmp/test.db
+      - SECRET_KEY=test-secret-fixed-key-for-e2e
+      - COMPANY_NAME=TestCorp
+      - APP_HOST=http://app-test:5000
+    expose:
+      - "5000"
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    profiles: ["test"]
+    depends_on:
+      - app-test
+    environment:
+      - BASE_URL=http://app-test:5000
+    volumes:
+      - ./tests:/app/tests
+      - ./test-results:/app/test-results
+    command: pytest tests/ -v --tb=line --maxfail=0 --screenshot=only-on-failure --tracing=retain-on-failure --html=test-results/report.html --self-contained-html
