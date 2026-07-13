@@ -1201,3 +1201,26 @@ body:not(.edit-mode) .init-name {
     content: "▼";
     transform: rotate(0deg);
 }
+
+/* ========== KR Chart ========== */
+#krDetailChartWrap {
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+}
+
+.kr-history-table-wrap {
+    max-height: 350px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+.kr-history-table-wrap th {
+    position: sticky;
+    top: 0;
+    background: #f8f9fa;
+    z-index: 1;
+}
+.kr-hist-date {
+    white-space: nowrap;
+    font-size: 0.82rem;
+}

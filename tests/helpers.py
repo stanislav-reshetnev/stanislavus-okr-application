@@ -162,6 +162,28 @@ class ApiClient:
             self._created["key_results"].append(kr["id"])
         return kr
 
+    def update_kr(self, kr_id, **kwargs):
+        r = self.session.put(
+            f"{self.base_url}/api/keyresults/{kr_id}",
+            json=kwargs,
+        )
+        if not r.ok:
+            self._log_and_raise(r, "update_kr")
+        return r.json()
+
+    def add_kr_snapshot(self, kr_id, value, recorded_at, source="manual"):
+        r = self.session.post(
+            f"{self.base_url}/api/keyresults/{kr_id}/snapshots",
+            json={"value": value, "recordedAt": recorded_at, "source": source},
+        )
+        if not r.ok:
+            self._log_and_raise(r, "add_kr_snapshot")
+        return r.json()
+
+    def get_kr_history(self, kr_id):
+        r = self.session.get(f"{self.base_url}/api/keyresults/{kr_id}/history")
+        return r.json() if r.ok else []
+
     # ── Initiatives ───────────────────────────────────────────────
 
     def create_initiative(self, objective_id, name, what="", impact="",

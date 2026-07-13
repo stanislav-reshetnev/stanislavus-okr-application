@@ -66,6 +66,8 @@ async function addKR(objectiveId) {
     if (snippetEl) snippetEl.textContent = '';
     const addWarning = document.getElementById('krApiWarning');
     if (addWarning) addWarning.classList.add('d-none');
+    document.getElementById('krHistoryTabLi').style.display = 'none';
+    currentKREdit = null;
     bootstrap.Modal.getOrCreateInstance(document.getElementById('krModal')).show();
 }
 
@@ -119,6 +121,9 @@ async function editKR(krId) {
   ${appHost}/api/keyresults/${found.id}`;
     document.getElementById('krCurlSnippet').textContent = curl;
 
+    currentKREdit = found;
+    document.getElementById('krHistoryTabLi').style.display = '';
+    krHistoryPage = 0;
     bootstrap.Modal.getOrCreateInstance(document.getElementById('krModal')).show();
 }
 
@@ -172,6 +177,304 @@ function showKRDetail(kr, krNumber) {
         linkEl.style.display = 'none';
     }
     bootstrap.Modal.getOrCreateInstance(document.getElementById('krDetailModal')).show();
+
+    loadKRHistory(kr.id).then(history => renderKRChart(kr, history));
+}
+
+function _parseDateTime(s) {
+    if (!s) return null;
+    return new Date(s.replace(' ', 'T') + (s.endsWith('Z') || s.includes('+') ? '' : 'Z'));
+}
+
+function _getIntervalBucket(date, interval) {
+    const d = new Date(date);
+    if (interval === 'day') {
+        return d.toISOString().slice(0, 10);
+    } else if (interval === 'week') {
+        const day = d.getUTCDay();
+        const diff = d.getUTCDate() - day + (day === 0 ? -6 : 1);
+        return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), diff)).toISOString().slice(0, 10);
+    } else if (interval === 'fortnight') {
+        const day = d.getUTCDate();
+        return d.toISOString().slice(0, 8) + (day <= 15 ? '01' : '16');
+    } else {
+        return d.toISOString().slice(0, 7);
+    }
+}
+
+function _groupSnapshotsByInterval(snapshots, interval) {
+    if (!snapshots.length) return [];
+    const buckets = {};
+    snapshots.forEach(s => {
+        const dt = _parseDateTime(s.recordedAt);
+        if (!dt) return;
+        const key = _getIntervalBucket(dt, interval);
+        if (!buckets[key] || dt > buckets[key]._dt) {
+            buckets[key] = {...s, _dt: dt};
+        }
+    });
+    return Object.keys(buckets).sort().map(k => {
+        const {_dt, ...rest} = buckets[k];
+        return rest;
+    });
+}
+
+function renderKRChart(kr, history) {
+    const canvas = document.getElementById('krDetailChart');
+    const wrap = document.getElementById('krDetailChartWrap');
+    if (!canvas || !wrap) return;
+
+    if (krChartInstance) {
+        krChartInstance.destroy();
+        krChartInstance = null;
+    }
+
+    if (!history || history.length < 2) {
+        wrap.style.display = 'none';
+        return;
+    }
+    wrap.style.display = '';
+
+    const grouped = _groupSnapshotsByInterval(history, krChartInterval);
+
+    const actualData = grouped.map(s => ({
+        x: _parseDateTime(s.recordedAt),
+        y: s.value
+    }));
+
+    const cycle = cyclesList.find(c => c.id === selectedCycleId);
+    const startDate = cycle && cycle.startDate ? new Date(cycle.startDate + 'T00:00:00Z') : actualData[0].x;
+    const endDate = cycle && cycle.endDate ? new Date(cycle.endDate + 'T23:59:59Z') : new Date();
+
+    const initVal = kr.initialValue || 0;
+    const targetVal = kr.targetValue || 0;
+
+    const targetData = targetVal > 0 ? [
+        {x: startDate, y: targetVal},
+        {x: endDate, y: targetVal}
+    ] : [];
+
+    const idealData = (targetVal > 0 && initVal !== targetVal) ? [
+        {x: startDate, y: initVal},
+        {x: endDate, y: targetVal}
+    ] : [];
+
+    const datasets = [{
+        label: 'Actual',
+        data: actualData,
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+        fill: false,
+        tension: 0.2,
+        pointRadius: 4,
+        pointBackgroundColor: '#2563eb',
+        borderWidth: 2
+    }];
+    if (targetData.length) {
+        datasets.push({
+            label: 'Target',
+            data: targetData,
+            borderColor: '#16a34a',
+            borderDash: [6, 4],
+            fill: false,
+            pointRadius: 0,
+            borderWidth: 1.5
+        });
+    }
+    if (idealData.length) {
+        datasets.push({
+            label: 'Ideal Pace',
+            data: idealData,
+            borderColor: '#9ca3af',
+            borderDash: [2, 3],
+            fill: false,
+            pointRadius: 0,
+            borderWidth: 1
+        });
+    }
+
+    const unitLabel = kr.unit || '';
+    const timeUnit = krChartInterval === 'day' ? 'day' : krChartInterval === 'month' ? 'month' : 'week';
+
+    krChartInstance = new Chart(canvas, {
+        type: 'line',
+        data: {datasets},
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {unit: timeUnit},
+                    min: startDate,
+                    max: endDate
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {display: !!unitLabel, text: unitLabel}
+                }
+            },
+            plugins: {
+                legend: {position: 'bottom', labels: {boxWidth: 20, padding: 10}},
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            const label = ctx.dataset.label || '';
+                            const val = ctx.parsed.y;
+                            return label + ': ' + val + (unitLabel ? ' ' + unitLabel : '');
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderKREditChart(kr, history) {
+    const canvas = document.getElementById('krEditChart');
+    if (!canvas) return;
+    if (krEditChartInstance) {
+        krEditChartInstance.destroy();
+        krEditChartInstance = null;
+    }
+    if (!history || history.length < 2) return;
+
+    const grouped = _groupSnapshotsByInterval(history, krChartInterval);
+    const actualData = grouped.map(s => ({ x: _parseDateTime(s.recordedAt), y: s.value }));
+    const cycle = cyclesList.find(c => c.id === selectedCycleId);
+    const startDate = cycle && cycle.startDate ? new Date(cycle.startDate + 'T00:00:00Z') : actualData[0].x;
+    const endDate = cycle && cycle.endDate ? new Date(cycle.endDate + 'T23:59:59Z') : new Date();
+    const initVal = kr.initialValue || 0;
+    const targetVal = kr.targetValue || 0;
+    const unitLabel = kr.unit || '';
+    const timeUnit = krChartInterval === 'day' ? 'day' : krChartInterval === 'month' ? 'month' : 'week';
+
+    const datasets = [{
+        label: 'Actual', data: actualData,
+        borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)',
+        fill: false, tension: 0.2, pointRadius: 4, pointBackgroundColor: '#2563eb', borderWidth: 2
+    }];
+    if (targetVal > 0) {
+        datasets.push({ label: 'Target', data: [{x: startDate, y: targetVal}, {x: endDate, y: targetVal}],
+            borderColor: '#16a34a', borderDash: [6, 4], fill: false, pointRadius: 0, borderWidth: 1.5 });
+    }
+    if (targetVal > 0 && initVal !== targetVal) {
+        datasets.push({ label: 'Ideal Pace', data: [{x: startDate, y: initVal}, {x: endDate, y: targetVal}],
+            borderColor: '#9ca3af', borderDash: [2, 3], fill: false, pointRadius: 0, borderWidth: 1 });
+    }
+
+    krEditChartInstance = new Chart(canvas, {
+        type: 'line',
+        data: {datasets},
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                x: { type: 'time', time: {unit: timeUnit}, min: startDate, max: endDate },
+                y: { beginAtZero: true, title: {display: !!unitLabel, text: unitLabel} }
+            },
+            plugins: {
+                legend: {position: 'bottom', labels: {boxWidth: 20, padding: 10}},
+                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + (unitLabel ? ' ' + unitLabel : '') } }
+            }
+        }
+    });
+}
+
+async function loadKRHistoryTab(krId) {
+    const history = await loadKRHistory(krId);
+    krHistoryData = history;
+    if (currentKREdit) renderKREditChart(currentKREdit, history);
+    renderHistoryTable(history, krId);
+}
+
+function renderHistoryTable(history, krId) {
+    krHistoryData = history;
+    const totalPages = Math.max(1, Math.ceil(history.length / KR_HIST_PAGE_SIZE));
+    if (krHistoryPage >= totalPages) krHistoryPage = totalPages - 1;
+    const start = krHistoryPage * KR_HIST_PAGE_SIZE;
+    const pageData = history.slice(start, start + KR_HIST_PAGE_SIZE);
+
+    const tbody = document.getElementById('krHistoryTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    pageData.forEach((s, i) => {
+        const tr = document.createElement('tr');
+        const dt = _parseDateTime(s.recordedAt);
+        const dateStr = !dt || isNaN(dt) ? s.recordedAt : dt.toLocaleString();
+        const sourceIcon = s.source === 'api' ? '🤖 API' : '✎ Manual';
+        tr.innerHTML = `<td>${start + i + 1}</td><td>${s.value}</td><td class="kr-hist-date">${dateStr}</td><td>${sourceIcon}</td>` +
+            `<td><button class="btn btn-outline-danger btn-sm py-0 px-1" onclick="deleteSnapshot('${krId}', '${s.id}')">🗑</button></td>`;
+        tbody.appendChild(tr);
+    });
+
+    const pagEl = document.getElementById('krHistoryPagination');
+    if (pagEl) {
+        pagEl.innerHTML = '';
+        if (totalPages > 1) {
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'btn btn-sm btn-outline-secondary' + (krHistoryPage === 0 ? ' disabled' : '');
+            prevBtn.textContent = '‹ Prev';
+            prevBtn.onclick = () => { if (krHistoryPage > 0) { krHistoryPage--; renderHistoryTable(krHistoryData, krId); } };
+            pagEl.appendChild(prevBtn);
+
+            const info = document.createElement('span');
+            info.className = 'small text-muted';
+            info.textContent = `Page ${krHistoryPage + 1} of ${totalPages}`;
+            pagEl.appendChild(info);
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'btn btn-sm btn-outline-secondary' + (krHistoryPage >= totalPages - 1 ? ' disabled' : '');
+            nextBtn.textContent = 'Next ›';
+            nextBtn.onclick = () => { if (krHistoryPage < totalPages - 1) { krHistoryPage++; renderHistoryTable(krHistoryData, krId); } };
+            pagEl.appendChild(nextBtn);
+        }
+    }
+}
+
+async function addSnapshotFromForm() {
+    const krId = document.getElementById('krId').value;
+    const valueStr = document.getElementById('krHistValue').value;
+    const date = document.getElementById('krHistDate').value;
+    if (!krId || !valueStr || !date) {
+        showToast('Value and date are required', 'error');
+        return;
+    }
+    const value = parseFloat(valueStr);
+    if (isNaN(value)) {
+        showToast('Invalid value', 'error');
+        return;
+    }
+    const resp = await fetch(`/api/keyresults/${krId}/snapshots`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({value, recordedAt: date})
+    });
+    if (resp.ok) {
+        document.getElementById('krHistValue').value = '';
+        document.getElementById('krHistDate').value = '';
+        const history = await loadKRHistory(krId);
+        const totalPages = Math.max(1, Math.ceil(history.length / KR_HIST_PAGE_SIZE));
+        krHistoryPage = totalPages - 1;
+        if (currentKREdit) renderKREditChart(currentKREdit, history);
+        renderHistoryTable(history, krId);
+        showToast('Snapshot added', 'success');
+    } else {
+        showToast('Failed to add snapshot', 'error');
+    }
+}
+
+async function deleteSnapshot(krId, snapshotId) {
+    const resp = await fetch(`/api/keyresults/${krId}/snapshots/${snapshotId}`, { method: 'DELETE' });
+    if (resp.ok) {
+        const history = await loadKRHistory(krId);
+        const totalPages = Math.max(1, Math.ceil(history.length / KR_HIST_PAGE_SIZE));
+        if (krHistoryPage >= totalPages) krHistoryPage = totalPages - 1;
+        if (currentKREdit) renderKREditChart(currentKREdit, history);
+        renderHistoryTable(history, krId);
+        showToast('Snapshot deleted', 'success');
+    } else {
+        showToast('Failed to delete snapshot', 'error');
+    }
 }
 
 function showInitiativeDetail(init, initNumber, objCode, objName) {
@@ -281,6 +584,7 @@ async function showSettingsModal() {
     try {
         const settings = await loadSettings();
         document.getElementById('settingCycleLength').value = settings.cycle_length || 'quarter';
+        document.getElementById('settingKrChartInterval').value = settings.kr_chart_interval || 'week';
         bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).show();
     } catch (e) {
         showToast('Failed to load settings', 'error');

@@ -1,5 +1,7 @@
 import uuid
 
+from app.models import kr_snapshot as snapshot_model
+
 
 def get_all(db):
     rows = db.execute('SELECT * FROM key_results').fetchall()
@@ -54,6 +56,7 @@ def create(db, objective_id, data):
          current_value, initial_value, unit, source,
          doc_link, description, max_pos + 1, confidence)
     )
+    snapshot_model.create(db, kr_id, current_value, source)
     db.commit()
     last_updated = db.execute(
         'SELECT last_updated FROM key_results WHERE id=?', (kr_id,)
@@ -105,6 +108,11 @@ def update(db, kr_id, data):
     db.execute(f"UPDATE key_results SET {', '.join(fields)} WHERE id=?", values)
 
     if metric_refresh:
+        snapshot_model.create(
+            db, kr_id, data['currentValue'],
+            data.get('source', 'manual'),
+            data.get('recordedAt')
+        )
         if 'source' in data:
             db.execute(
                 'UPDATE key_results SET last_updated = datetime("now"), source = ? WHERE id=?',

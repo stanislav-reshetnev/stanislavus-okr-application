@@ -282,7 +282,9 @@ window.addEventListener('DOMContentLoaded', async () => {
         setButtonLoading(btn, true);
         try {
             const cycleLength = document.getElementById('settingCycleLength').value;
-            await updateSettings({ cycle_length: cycleLength });
+            const krInterval = document.getElementById('settingKrChartInterval').value;
+            await updateSettings({ cycle_length: cycleLength, kr_chart_interval: krInterval });
+            krChartInterval = krInterval;
             showToast('Settings saved.', 'success');
         } catch (e) {
             showToast('Failed to save settings', 'error');
@@ -315,6 +317,36 @@ window.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('teamModal').addEventListener('show.bs.modal', refreshTeamList);
     document.getElementById('managerModal').addEventListener('show.bs.modal', refreshManagerList);
     document.getElementById('userModal').addEventListener('show.bs.modal', refreshUserList);
+
+    document.getElementById('krDetailModal').addEventListener('hidden.bs.modal', () => {
+        if (krChartInstance) {
+            krChartInstance.destroy();
+            krChartInstance = null;
+        }
+    });
+
+    document.getElementById('krTabHistoryBtn').addEventListener('shown.bs.tab', () => {
+        const krId = document.getElementById('krId').value;
+        if (krId) loadKRHistoryTab(krId);
+    });
+
+    document.getElementById('krModal').addEventListener('hidden.bs.modal', () => {
+        if (krEditChartInstance) {
+            krEditChartInstance.destroy();
+            krEditChartInstance = null;
+        }
+        const editTab = bootstrap.Tab.getInstance(document.getElementById('krTabEditBtn'));
+        if (editTab) editTab.show();
+    });
+
+    try {
+        const settings = await loadSettings();
+        if (settings.kr_chart_interval) {
+            krChartInterval = settings.kr_chart_interval;
+            const sel = document.getElementById('settingKrChartInterval');
+            if (sel) sel.value = krChartInterval;
+        }
+    } catch {}
 
     document.querySelectorAll('.dropdown-menu .dropdown-item').forEach(item => {
         item.addEventListener('click', (e) => {

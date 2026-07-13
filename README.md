@@ -59,7 +59,11 @@ The application revolves around seven core entities:
     │         │
   ┌──┴────┐  ┌┴────────┐
   │KeyResult│ │Initiative│
-  └────────┘  └─────────┘
+  └───┬───┘  └─────────┘
+      │ has
+  ┌───▼──────┐
+  │Snapshots │
+  └──────────┘
 ```
 
 | Entity | Description |
@@ -67,10 +71,11 @@ The application revolves around seven core entities:
 | **Cycle** | A time-bound container for root objectives (e.g. "Q2 2026"). Status: `draft`, `in_progress`, `completed`. Managed by administrators via **🗓 OKR Cycles**. |
 | **Objective** | A high-level goal (e.g. "Improve Customer Satisfaction"). Objectives are hierarchical — each can have a `parentId` making it a child of another objective, or be a root-level goal linked to a **Cycle**. |
 | **Key Result** | A measurable outcome tied to an objective (e.g. "NPS score reaches 9+"). Tracks progress via `currentValue` / `targetValue` / `initialValue` with a unit and confidence score. |
+| **KR Snapshot** | A recorded metric value at a specific point in time. Created automatically whenever `currentValue` changes. Powers the **Progress Over Time** chart in the KR detail modal. Historical snapshots can also be imported via `POST /api/keyresults/{id}/snapshots` without affecting the current value. |
 | **Initiative** | A project or task contributing to an objective (e.g. "Run customer survey"). Contains a description of the work (`what`), expected `impact`, a documentation link, and a `status` (backlog → in_progress → completed / cancelled). |
 | **Team** | A group responsible for objectives. Objectives can be filtered by team. |
 | **Manager** | A person responsible for objectives. Objectives can be filtered by manager. |
-| **Setting** | Key-value configuration store (default cycle length, etc.). Managed by administrators via **⚙ Settings**. |
+| **Setting** | Key-value configuration store (default cycle length, KR chart interval, etc.). Managed by administrators via **⚙ Settings**. |
 
 - **Key Results** and **Initiatives** belong to exactly one **Objective**.
 - **Objectives** form a tree (via `parentId`). A **Tree** is the full recursive view of objectives with their children, key results, and initiatives.
@@ -243,6 +248,7 @@ See **[INTEGRATIONS.md](INTEGRATIONS.md)** for:
 - How to obtain and use an API token
 - The complete OpenAPI specification reference
 - Key Result update behaviour (source tracking, lastUpdated)
+- KR value history and backfilling via `POST /api/keyresults/{id}/snapshots`
 - Configuration and authentication details
 
 

@@ -139,6 +139,36 @@ def init_db(app):
         except sqlite3.OperationalError:
             pass
 
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS kr_snapshots (
+                id TEXT PRIMARY KEY,
+                kr_id TEXT NOT NULL,
+                value REAL NOT NULL,
+                recorded_at TEXT NOT NULL DEFAULT (datetime('now')),
+                source TEXT DEFAULT 'manual',
+                FOREIGN KEY (kr_id) REFERENCES key_results(id) ON DELETE CASCADE
+            )
+        ''')
+        db.execute('CREATE INDEX IF NOT EXISTS idx_kr_snapshots_kr_id ON kr_snapshots(kr_id)')
+        db.execute('CREATE INDEX IF NOT EXISTS idx_kr_snapshots_recorded_at ON kr_snapshots(recorded_at)')
+
+        existing_krs = db.execute('SELECT id, current_value, source FROM key_results').fetchall()
+        for kr in existing_krs:
+            has_history = db.execute(
+                'SELECT 1 FROM kr_snapshots WHERE kr_id = ?', (kr['id'],)
+            ).fetchone()
+            if not has_history:
+                import uuid as _uuid
+                db.execute(
+                    'INSERT INTO kr_snapshots (id, kr_id, value, source) VALUES (?, ?, ?, ?)',
+                    (str(_uuid.uuid4()), kr['id'], kr['current_value'], kr['source'] or 'manual')
+                )
+
+        db.execute(
+            'INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)',
+            ('kr_chart_interval', 'week')
+        )
+
         needs_backfill = False
 
         # Seed default cycle if none exists
@@ -266,6 +296,13 @@ def init_db(app):
             'settings': {
                 'key': 'Setting name',
                 'value': 'Setting value',
+            },
+            'kr_snapshots': {
+                'id': 'Primary key, UUID',
+                'kr_id': 'Key result ID (FK → key_results.id, CASCADE)',
+                'value': 'Metric value at the time of recording',
+                'recorded_at': 'Timestamp when the value was recorded',
+                'source': 'Source of the snapshot: "manual" or "api"',
             },
         }
         for table_name, cols in descriptions.items():

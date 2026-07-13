@@ -94,3 +94,9 @@ async function apiUpdateCycle(cycleId, data) {
     }
     return await resp.json();
 }
+
+async function loadKRHistory(krId) {
+    const resp = await fetch(`/api/keyresults/${krId}/history`);
+    if (!resp.ok) return [];
+    return await resp.json();
+}

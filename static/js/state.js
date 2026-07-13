@@ -5,6 +5,13 @@ let selectedManagerId = '';
 let searchQuery = '';
 let editMode = false;
 let viewMode = 'hierarchy';
+let krChartInterval = 'week';
+let krChartInstance = null;
+let krEditChartInstance = null;
+let currentKREdit = null;
+let krHistoryData = [];
+let krHistoryPage = 0;
+const KR_HIST_PAGE_SIZE = 10;
 
 let graphResizeHandler = null;
 let graphCurrentRoots = null;
