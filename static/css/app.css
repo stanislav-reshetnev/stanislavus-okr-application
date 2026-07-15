@@ -560,13 +560,15 @@ mark.search-highlight {
 }
 
 .objective-name, .kr-name {
-    display: inline-block;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    vertical-align: middle;
+    display: inline;
+}
+
+.objective-label, .kr-label, .init-label {
+    display: block;
     min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     flex-shrink: 1;
 }
 
@@ -699,12 +701,6 @@ body:not(.edit-mode) .kr-name { cursor: pointer; }
 .init-name {
     color: #0891b2;
     font-weight: 600;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
-    flex-shrink: 1;
 }
 .init-what {
     font-size: 0.8rem;
@@ -1188,6 +1184,9 @@ body:not(.edit-mode) .init-name {
     user-select: none;
     font-weight: 600;
     transition: color 0.2s;
+    flex-shrink: 0;
+    min-width: 1rem;
+    text-align: center;
 }
 .caret::before {
     content: "▶";

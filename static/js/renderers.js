@@ -37,10 +37,9 @@ function renderTree(nodes, parentElement, isRoot = false) {
         const handleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
         const hlName = highlightText(node.name, searchQuery);
         if (node.keyResults && node.keyResults.length) {
-            nameHtml += `<span class="caret" title="${node.name}">`;
-            nameHtml += `${handleHtml}<span class="objective-number">${objCode}</span> <span class="objective-name" title="${node.name}">${hlName}</span></span>`;
+            nameHtml += `<span><span class="caret" title="${node.name}"></span>${handleHtml}<span class="objective-label"><span class="objective-number">${objCode}</span> <span class="objective-name" title="${node.name}">${hlName}</span></span></span>`;
         } else {
-            nameHtml += `<span>${handleHtml}<span class="objective-number">${objCode}</span> <span class="objective-name" title="${node.name}">${hlName}</span></span>`;
+            nameHtml += `<span>${handleHtml}<span class="objective-label"><span class="objective-number">${objCode}</span> <span class="objective-name" title="${node.name}">${hlName}</span></span></span>`;
         }
         nodeDiv.innerHTML = nameHtml;
 
@@ -155,7 +154,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 const confVal = kr.confidence || 'medium';
                 const confLabel = confVal === 'medium' ? 'Med' : confVal.charAt(0).toUpperCase() + confVal.slice(1);
                 krRow.innerHTML = `
-                    ${krHandleHtml}📊 <strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${highlightText(kr.name, searchQuery)}</strong> (${kr.currentValue} / ${kr.targetValue} ${kr.unit})
+                    ${krHandleHtml}📊 <span class="kr-label"><strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${highlightText(kr.name, searchQuery)}</strong></span> (${kr.currentValue} / ${kr.targetValue} ${kr.unit})
                     <div class="progress" title="${progressTitle.replace(/"/g, '&quot;')}"><div class="progress-bar ${pctClass}" style="width:${pct === -1 ? 100 : pct}%">${pct === -1 ? 'N/A' : Math.round(pct) + '%'}</div></div>${robotIcon}<span class="cs cs-${confVal}" title="Confidence Score">${confLabel}</span>`;
 
                 // KR drag handle events
@@ -209,7 +208,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
                 const initStatus = init.status || 'backlog';
                 const initHandleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
                 initRow.innerHTML = `
-                    ${initHandleHtml}📋 <strong class="init-number">${initNumber}:</strong> <strong class="init-name" title="${init.name}">${highlightText(init.name, searchQuery)}</strong>
+                    ${initHandleHtml}📋 <span class="init-label"><strong class="init-number">${initNumber}:</strong> <strong class="init-name" title="${init.name}">${highlightText(init.name, searchQuery)}</strong></span>
                     <span class="status status-${initStatus}">${statusMap[initStatus] || initStatus}</span>`;
 
                 initRow.addEventListener('click', (e) => {
