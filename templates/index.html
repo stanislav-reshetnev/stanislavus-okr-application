@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="{{ theme }}" data-bs-theme="{{ 'dark' if theme != 'light' else 'light' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -427,6 +427,15 @@
                 <div class="modal-header"><h5 class="modal-title">⚙ Settings</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <form id="settingsForm">
+                        <div class="mb-3">
+                            <label class="form-label">🎨 Theme</label>
+                            <select class="form-select" id="settingTheme">
+                                <option value="light">☀️ Light</option>
+                                <option value="soft-dark">🌙 Soft Dark</option>
+                                <option value="bold-dark">🚀 Bold Dark</option>
+                                <option value="cyberpunk">🤖 Cyberpunk</option>
+                            </select>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">Default Cycle Length</label>
                             <select class="form-select" id="settingCycleLength">

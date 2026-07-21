@@ -80,7 +80,20 @@ The application revolves around seven core entities:
 - **Key Results** and **Initiatives** belong to exactly one **Objective**.
 - **Objectives** form a tree (via `parentId`). A **Tree** is the full recursive view of objectives with their children, key results, and initiatives.
 - **Root objectives** are linked to a **Cycle** (`cycle_id`); child objectives inherit the parent's cycle through the tree structure.
-- **Settings** provide application-wide defaults (e.g. `cycle_length` — year, quarter, or month).
+- **Settings** provide application-wide defaults (e.g. `cycle_length` — year, quarter, or month; `theme` — `light`, `soft-dark`, `bold-dark`, or `cyberpunk`).
+
+### Themes
+
+The application supports four color themes. The active theme is a **global** admin-managed setting stored in the `settings` table under the `theme` key, applied via `data-theme` and `data-bs-theme` attributes on the `<html>` element (rendered server-side to avoid any flash of unstyled content).
+
+| Theme | Description |
+|-------|-------------|
+| `light` (default) | Standard light Bootstrap-based palette with rounded corners (6–16px radius). |
+| `soft-dark` | Muted slate-blue dark theme. Professional, low-contrast, minimal gradients. 2–6px corner radius. |
+| `bold-dark` | Deep dark background with radial-gradient body and purple→blue gradient primary buttons. Linear/Vercel-inspired. 2–6px corner radius. |
+| `cyberpunk` | Black background with neon cyan/magenta accents and cyan→green gradient buttons. Aggressive neon-glow shadows. 2–4px corner radius. |
+
+Themes are switched from the **🎨 Theme** selector in **⚙ Settings** (admin-only).
 
 ```
 stanislavus-okr-application/
