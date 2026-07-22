@@ -359,4 +359,12 @@ window.addEventListener('DOMContentLoaded', async () => {
             if (dropdown) dropdown.hide();
         });
     });
+
+    // Enable drag & resize for major modals (skip transient confirm/prompt)
+    ['objModal', 'krModal', 'initiativeModal', 'settingsModal', 'cyclesModal',
+     'teamModal', 'managerModal', 'userModal', 'profileModal',
+     'krDetailModal', 'initiativeDetailModal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) initModalDragResize(el);
+    });
 });

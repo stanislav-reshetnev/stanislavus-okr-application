@@ -1290,6 +1290,57 @@ body:not(.edit-mode) .init-name {
     padding: 1.25rem;
 }
 
+/* ========== Modal Drag & Resize ========== */
+.modal-draggable .modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: 95vh;
+    position: relative;
+}
+.modal-draggable .modal-header {
+    cursor: grab;
+    flex-shrink: 0;
+}
+.modal-draggable .modal-body {
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+.modal-draggable .modal-footer {
+    flex-shrink: 0;
+}
+.modal-draggable.dragging,
+.modal-draggable.resizing {
+    user-select: none;
+}
+.modal-draggable.dragging .modal-content {
+    box-shadow: var(--shadow-lg);
+}
+.modal-resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: ew-resize;
+    z-index: 5;
+}
+.modal-resize-handle::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 1px;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 24px;
+    background: var(--text-tertiary);
+    border-radius: 1px;
+}
+@media (max-width: 768px) {
+    .modal-draggable .modal-header { cursor: default; }
+    .modal-resize-handle { display: none; }
+}
+
 
 #objModal .modal-dialog,
 #krModal .modal-dialog,
