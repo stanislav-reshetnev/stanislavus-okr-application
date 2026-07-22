@@ -1260,11 +1260,31 @@ body:not(.edit-mode) .init-name {
     background: var(--surface-hover);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     padding: 1rem 1.25rem;
+    align-items: flex-start;
+}
+.modal-header .btn-close {
+    margin-top: 0.2rem;
 }
 .modal-title {
     font-weight: 700;
     color: var(--text);
     font-size: 1.05rem;
+}
+.modal-title-group {
+    min-width: 0;
+    flex: 1;
+}
+.modal-subtitle {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-top: 0.15rem;
+    max-width: 600px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.modal-subtitle:empty {
+    display: none;
 }
 .modal-body {
     padding: 1.25rem;
