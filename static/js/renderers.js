@@ -107,7 +107,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
             const btnKR = document.createElement('button');
             btnKR.className = 'btn btn-outline-success btn-sm py-0';
             btnKR.textContent = '+KR';
-            btnKR.onclick = (e) => { e.stopPropagation(); addKR(node.id); };
+            btnKR.onclick = (e) => { e.stopPropagation(); addKR(node.id, objCode, node.name); };
             nodeDiv.appendChild(btnKR);
             const btnInit = document.createElement('button');
             btnInit.className = 'btn btn-outline-info btn-sm py-0';
@@ -182,7 +182,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
                     const btnEdit = document.createElement('button');
                     btnEdit.className = 'btn btn-outline-secondary btn-sm py-0 ms-2';
                     btnEdit.textContent = '✎';
-                    btnEdit.onclick = () => editKR(kr.id);
+                    btnEdit.onclick = () => editKR(kr.id, krNumber, node.name);
                     krRow.appendChild(btnEdit);
                     const btnDel = document.createElement('button');
                     btnDel.className = 'btn btn-outline-danger btn-sm py-0';

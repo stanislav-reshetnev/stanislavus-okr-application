@@ -50,7 +50,7 @@ async function deleteObjective(id) {
     refreshTree();
 }
 
-async function addKR(objectiveId) {
+async function addKR(objectiveId, parentCode = '', parentName = '') {
     if (!editMode) return;
     document.getElementById('krId').value = '';
     document.getElementById('krObjectiveId').value = objectiveId;
@@ -68,10 +68,12 @@ async function addKR(objectiveId) {
     if (addWarning) addWarning.classList.add('d-none');
     document.getElementById('krHistoryTabLi').style.display = 'none';
     currentKREdit = null;
+    const subtitle = document.getElementById('krModalSubtitle');
+    if (subtitle) subtitle.textContent = parentCode || parentName ? `New KR · ${parentCode} ${parentName}`.trim() : '';
     bootstrap.Modal.getOrCreateInstance(document.getElementById('krModal')).show();
 }
 
-async function editKR(krId) {
+async function editKR(krId, krCode = '', parentName = '') {
     if (!editMode) return;
     const tree = await loadTree(selectedTeamId, selectedManagerId, selectedCycleId);
     let found = null;
@@ -124,6 +126,8 @@ async function editKR(krId) {
     currentKREdit = found;
     document.getElementById('krHistoryTabLi').style.display = '';
     krHistoryPage = 0;
+    const subtitle = document.getElementById('krModalSubtitle');
+    if (subtitle) subtitle.textContent = krCode || parentName ? `${krCode}${parentName ? ' · ' + parentName : ''}`.trim() : '';
     bootstrap.Modal.getOrCreateInstance(document.getElementById('krModal')).show();
 }
 

@@ -340,6 +340,8 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
         const editTab = bootstrap.Tab.getInstance(document.getElementById('krTabEditBtn'));
         if (editTab) editTab.show();
+        const subtitle = document.getElementById('krModalSubtitle');
+        if (subtitle) subtitle.textContent = '';
     });
 
     try {
