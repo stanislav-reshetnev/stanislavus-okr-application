@@ -1565,6 +1565,25 @@ body:not(.edit-mode) .init-name {
     padding-top: 0.75rem;
 }
 
+.kr-chart-refresh {
+    font-size: 0.9rem;
+    line-height: 1;
+    opacity: 0.55;
+    transition: opacity 0.15s;
+    text-decoration: none;
+    display: inline-block;
+}
+.kr-chart-refresh:hover { opacity: 1; }
+.kr-chart-refresh.loading {
+    opacity: 0.4;
+    pointer-events: none;
+    animation: kr-spin 0.9s linear infinite;
+}
+@keyframes kr-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 .kr-history-table-wrap {
     max-height: 350px;
     overflow-y: auto;

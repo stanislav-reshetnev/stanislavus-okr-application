@@ -132,6 +132,7 @@ async function editKR(krId, krCode = '', parentName = '') {
 }
 
 function showKRDetail(kr, krNumber) {
+    currentKRDetail = kr;
     const rawPct = calculateKRProgress(kr);
     const pct = rawPct === -1 ? -1 : Math.round(rawPct);
     document.getElementById('krDetailLabel').textContent = krNumber + ': ' + kr.name;
@@ -332,6 +333,20 @@ function renderKRChart(kr, history) {
             }
         }
     });
+}
+
+async function refreshKRDetailChart() {
+    if (!currentKRDetail) return;
+    const btn = document.getElementById('krDetailRefreshBtn');
+    if (btn) btn.classList.add('loading');
+    try {
+        const history = await loadKRHistory(currentKRDetail.id);
+        renderKRChart(currentKRDetail, history);
+    } catch (e) {
+        showToast('Failed to refresh chart', 'error');
+    } finally {
+        if (btn) btn.classList.remove('loading');
+    }
 }
 
 function renderKREditChart(kr, history) {

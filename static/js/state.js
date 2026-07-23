@@ -9,6 +9,7 @@ let krChartInterval = 'week';
 let krChartInstance = null;
 let krEditChartInstance = null;
 let currentKREdit = null;
+let currentKRDetail = null;
 let krHistoryData = [];
 let krHistoryPage = 0;
 const KR_HIST_PAGE_SIZE = 10;

@@ -279,6 +279,10 @@
                             </form>
                         </div>
                         <div class="tab-pane fade" id="krTabHistory" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong class="text-muted small">Progress</strong>
+                                <button type="button" class="btn btn-link btn-sm p-0 kr-chart-refresh" id="krEditRefreshBtn" title="Refresh chart">🔄</button>
+                            </div>
                             <div style="height:180px;position:relative;" class="mb-3">
                                 <canvas id="krEditChart"></canvas>
                             </div>
@@ -341,8 +345,11 @@
                     </div>
                     <div id="krDetailChartWrap" class="mt-3" style="display:none">
                         <hr>
-                        <strong class="text-muted">Progress Over Time</strong>
-                        <div style="height:200px;position:relative;" class="mt-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong class="text-muted">Progress Over Time</strong>
+                            <button type="button" class="btn btn-link btn-sm p-0 kr-chart-refresh" id="krDetailRefreshBtn" title="Refresh chart">🔄</button>
+                        </div>
+                        <div style="height:200px;position:relative;">
                             <canvas id="krDetailChart"></canvas>
                         </div>
                     </div>

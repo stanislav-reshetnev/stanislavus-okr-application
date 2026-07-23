@@ -367,4 +367,20 @@ window.addEventListener('DOMContentLoaded', async () => {
         const el = document.getElementById(id);
         if (el) initModalDragResize(el);
     });
+
+    // KR chart refresh buttons
+    const detailRefreshBtn = document.getElementById('krDetailRefreshBtn');
+    if (detailRefreshBtn) detailRefreshBtn.addEventListener('click', refreshKRDetailChart);
+    const editRefreshBtn = document.getElementById('krEditRefreshBtn');
+    if (editRefreshBtn) editRefreshBtn.addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        btn.classList.add('loading');
+        try {
+            if (currentKREdit) await loadKRHistoryTab(currentKREdit.id);
+        } catch {
+            showToast('Failed to refresh chart', 'error');
+        } finally {
+            btn.classList.remove('loading');
+        }
+    });
 });
