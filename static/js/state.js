@@ -18,7 +18,6 @@ let graphResizeHandler = null;
 let graphCurrentRoots = null;
 
 const editModeToggle = document.getElementById('editModeToggle');
-const createObjBtn = document.getElementById('createObjBtn');
 const teamsBtn = document.getElementById('teamsBtn');
 const managersBtn = document.getElementById('managersBtn');
 const viewModeGroup = document.getElementById('viewModeGroup');

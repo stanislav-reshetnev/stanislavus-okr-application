@@ -24,6 +24,7 @@
     --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
     --primary-focus-ring: rgba(99,102,241,0.15);
     --primary-shadow: rgba(99,102,241,0.3);
+    --on-primary: #ffffff;
 
     --info: #0891b2;
     --info-light: #ecfeff;
@@ -99,6 +100,7 @@
     --primary-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
     --primary-focus-ring: rgba(129,140,248,0.25);
     --primary-shadow: rgba(129,140,248,0.4);
+    --on-primary: #ffffff;
 
     --info: #22d3ee;
     --info-light: #155e75;
@@ -174,6 +176,7 @@
     --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%);
     --primary-focus-ring: rgba(139,92,246,0.3);
     --primary-shadow: rgba(139,92,246,0.5);
+    --on-primary: #0a0a0f;
 
     --info: #38bdf8;
     --info-light: #0c4a6e;
@@ -249,6 +252,7 @@
     --primary-gradient: linear-gradient(135deg, #00ffe5 0%, #00ff66 100%);
     --primary-focus-ring: rgba(0,255,229,0.3);
     --primary-shadow: rgba(0,255,229,0.6);
+    --on-primary: #0a0a0f;
 
     --info: #ff00ff;
     --info-light: #3a0033;
@@ -405,7 +409,7 @@ h1, h2, h3, h4, h5 {
     --bs-btn-active-bg: var(--primary-hover);
     --bs-btn-active-border-color: var(--primary-hover);
     background: var(--primary);
-    color: white;
+    color: var(--on-primary);
     border-color: var(--primary);
 }
 .btn-primary:hover {
@@ -420,7 +424,6 @@ h1, h2, h3, h4, h5 {
 :root[data-theme="cyberpunk"] .btn-primary {
     background: var(--primary-gradient);
     border-color: transparent;
-    color: #0a0a0f;
     font-weight: 600;
     text-shadow: none;
 }
@@ -669,7 +672,7 @@ h1, h2, h3, h4, h5 {
 }
 #viewModeGroup .btn.active {
     background: var(--primary);
-    color: white;
+    color: var(--on-primary);
     border-color: var(--primary);
 }
 #viewModeGroup .btn.active:hover {
@@ -744,7 +747,7 @@ h1, h2, h3, h4, h5 {
     transition: all var(--transition);
 }
 #krDetailDocLink:hover {
-    background: #ddd6fe;
+    background: var(--primary-light);
     color: var(--primary-hover);
 }
 
@@ -1069,13 +1072,13 @@ body:not(.edit-mode) .init-name {
     letter-spacing: 0.02em;
 }
 .progress-bar-low {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: linear-gradient(135deg, var(--red), var(--red-strong));
 }
 .progress-bar-mid {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
+    background: linear-gradient(135deg, var(--yellow), var(--yellow-strong));
 }
 .progress-bar-high {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: linear-gradient(135deg, var(--green), var(--green-strong));
 }
 .progress-bar-empty {
     background: var(--border);
@@ -1366,6 +1369,19 @@ body:not(.edit-mode) .init-name {
     overflow: hidden;
     text-overflow: ellipsis;
     display: block;
+}
+
+/* ========== Curl Snippet ========== */
+.curl-snippet {
+    cursor: pointer;
+    background: var(--table-header-bg);
+    color: var(--text);
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    border: 1px solid var(--border);
 }
 
 /* ========== Forms ========== */

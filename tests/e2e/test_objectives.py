@@ -12,10 +12,10 @@ class TestCreateObjective:
 
         # Enter edit mode (checkbox is display:none, so set + dispatch via JS)
         pg.evaluate("""() => { const cb = document.getElementById('editModeToggle'); if (!cb.checked) { cb.checked = true; cb.dispatchEvent(new Event('change')); } }""")
-        pg.locator("#createObjBtn").wait_for(state="visible", timeout=5000)
+        pg.locator("#emptyState button").wait_for(state="visible", timeout=5000)
 
-        # Open create modal
-        pg.click("#createObjBtn")
+        # Open create modal via empty-state button
+        pg.click("#emptyState button")
         pg.wait_for_selector("#objName:visible", timeout=5000)
 
         obj_name = "E2E Created Objective"
@@ -31,7 +31,6 @@ class TestCreateObjective:
         assert pg.is_checked("#editModeToggle"), (
             "Should remain in edit mode after creating objective"
         )
-        assert pg.locator("#createObjBtn").is_visible()
 
 
 class TestEditObjective:

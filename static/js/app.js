@@ -161,7 +161,6 @@ async function handleUpdateCycleStatus(cycleId, status) {
 window.addEventListener('DOMContentLoaded', async () => {
     editMode = false;
     editModeToggle.checked = false;
-    createObjBtn.classList.add('d-none');
     teamsBtn.classList.add('d-none');
     managersBtn.classList.add('d-none');
     usersBtn.classList.add('d-none');
@@ -214,7 +213,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     editModeToggle.addEventListener('change', () => {
         editMode = editModeToggle.checked;
         if (editMode) {
-            createObjBtn.classList.remove('d-none');
             teamsBtn.classList.remove('d-none');
             managersBtn.classList.remove('d-none');
             if (currentUser.role === 'admin') {
@@ -226,7 +224,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('#viewModeGroup .btn').forEach(b => b.classList.remove('active'));
             document.querySelector('#viewModeGroup [data-mode="hierarchy"]').classList.add('active');
         } else {
-            createObjBtn.classList.add('d-none');
             teamsBtn.classList.add('d-none');
             managersBtn.classList.add('d-none');
             usersBtn.classList.add('d-none');

@@ -18,7 +18,6 @@
                 <a href="/api/docs" class="btn btn-outline-secondary btn-sm ms-1">📖 API Docs</a>
             </div>
             <div class="header-actions">
-                <button class="btn btn-primary btn-sm d-none" id="createObjBtn" data-bs-toggle="modal" data-bs-target="#objModal" onclick="prepareObjForm()">➕ Create Objective</button>
                 <button class="btn btn-outline-secondary btn-sm d-none" id="teamsBtn" data-bs-toggle="modal" data-bs-target="#teamModal">👥 Teams</button>
                 <button class="btn btn-outline-secondary btn-sm d-none" id="managersBtn" data-bs-toggle="modal" data-bs-target="#managerModal">👤 Managers</button>
                 <button class="btn btn-outline-secondary btn-sm d-none" id="usersBtn" data-bs-toggle="modal" data-bs-target="#userModal">🔐 Users</button>
@@ -195,7 +194,7 @@
                             Curl code for external updates ▾
                         </button>
                         <div class="collapse" id="initiativeCurlCode">
-                            <pre id="initiativeCurlSnippet" style="cursor:pointer;background:#f8f9fa;padding:8px;border-radius:4px;font-size:12px;white-space:pre-wrap;word-break:break-all;" onclick="copyCurlCode('initiativeCurlSnippet')" title="Click to copy">—</pre>
+                            <pre id="initiativeCurlSnippet" class="curl-snippet" onclick="copyCurlCode('initiativeCurlSnippet')" title="Click to copy">—</pre>
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Save</button>
                     </form>
@@ -271,9 +270,7 @@
                                     Curl code for external updates ▾
                                 </button>
                                 <div class="collapse" id="krCurlCode">
-                                    <pre id="krCurlSnippet"
-                                         style="cursor:pointer;background:#f8f9fa;padding:8px;border-radius:4px;font-size:12px;white-space:pre-wrap;word-break:break-all;"
-                                         onclick="copyCurlCode()" title="Click to copy">—</pre>
+                                    <pre id="krCurlSnippet" class="curl-snippet" onclick="copyCurlCode()" title="Click to copy">—</pre>
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100">Save</button>
                             </form>
