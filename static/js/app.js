@@ -283,13 +283,15 @@ window.addEventListener('DOMContentLoaded', async () => {
         try {
             const cycleLength = document.getElementById('settingCycleLength').value;
             const krInterval = document.getElementById('settingKrChartInterval').value;
-            const theme = document.getElementById('settingTheme').value;
+            const themeSelect = document.getElementById('settingTheme');
+            const theme = themeSelect ? themeSelect.value : (document.documentElement.getAttribute('data-theme') || 'light');
             await updateSettings({ cycle_length: cycleLength, kr_chart_interval: krInterval, theme });
             krChartInterval = krInterval;
             document.documentElement.setAttribute('data-theme', theme);
             document.documentElement.setAttribute('data-bs-theme', theme === 'light' ? 'light' : 'dark');
             showToast('Settings saved.', 'success');
         } catch (e) {
+            console.error('Settings save error:', e);
             showToast('Failed to save settings', 'error');
         } finally {
             setButtonLoading(btn, false);

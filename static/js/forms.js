@@ -603,11 +603,13 @@ async function showSettingsModal() {
     try {
         const settings = await loadSettings();
         const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-        document.getElementById('settingTheme').value = settings.theme || currentTheme;
+        const themeSelect = document.getElementById('settingTheme');
+        if (themeSelect) themeSelect.value = settings.theme || currentTheme;
         document.getElementById('settingCycleLength').value = settings.cycle_length || 'quarter';
         document.getElementById('settingKrChartInterval').value = settings.kr_chart_interval || 'week';
         bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).show();
     } catch (e) {
+        console.error('Settings load error:', e);
         showToast('Failed to load settings', 'error');
     }
 }
