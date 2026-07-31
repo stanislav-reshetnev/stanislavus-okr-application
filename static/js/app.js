@@ -74,12 +74,16 @@ document.getElementById('krForm').addEventListener('submit', async (e) => {
         };
         if (id) {
             await fetch(`/api/keyresults/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            refreshTree({ ensureExpanded: document.getElementById('krObjectiveId').value });
+            showToast('Saved', 'success');
         } else {
             const objId = document.getElementById('krObjectiveId').value;
             await fetch(`/api/objectives/${objId}/keyresults`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            bootstrap.Modal.getInstance(document.getElementById('krModal')).hide();
+            refreshTree({ ensureExpanded: objId });
         }
-        bootstrap.Modal.getInstance(document.getElementById('krModal')).hide();
-        refreshTree({ ensureExpanded: document.getElementById('krObjectiveId').value });
+    } catch (e) {
+        showToast('Failed to save KR', 'error');
     } finally {
         setButtonLoading(btn, false);
     }

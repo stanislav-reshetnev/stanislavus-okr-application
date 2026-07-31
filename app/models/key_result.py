@@ -78,13 +78,28 @@ def create(db, objective_id, data):
     }
 
 
+def _values_equal(a, b):
+    """Сравнение значений с допуском для float (NaN-safe)."""
+    if a is None or b is None:
+        return a == b
+    try:
+        return abs(float(a) - float(b)) < 1e-9
+    except (ValueError, TypeError):
+        return a == b
+
+
 def update(db, kr_id, data):
+    current = db.execute(
+        'SELECT current_value, target_value, initial_value FROM key_results WHERE id=?',
+        (kr_id,)
+    ).fetchone()
+    if not current:
+        return False
+
     fields = []
     values = []
     key_map = {
         'name': 'name',
-        'targetValue': 'target_value',
-        'initialValue': 'initial_value',
         'unit': 'unit',
         'docLink': 'doc_link',
         'description': 'description',
@@ -96,8 +111,16 @@ def update(db, kr_id, data):
             fields.append(f"{db_key}=?")
             values.append(data[camel_key])
 
+    if 'initialValue' in data and not _values_equal(data['initialValue'], current['initial_value']):
+        fields.append('initial_value=?')
+        values.append(data['initialValue'])
+
+    if 'targetValue' in data and not _values_equal(data['targetValue'], current['target_value']):
+        fields.append('target_value=?')
+        values.append(data['targetValue'])
+
     metric_refresh = False
-    if 'currentValue' in data:
+    if 'currentValue' in data and not _values_equal(data['currentValue'], current['current_value']):
         metric_refresh = True
         fields.append('current_value=?')
         values.append(data['currentValue'])

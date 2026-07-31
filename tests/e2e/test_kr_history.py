@@ -47,3 +47,47 @@ class TestKRHistoryChart:
         kr_data = find_kr(tree)
         assert kr_data is not None
         assert float(kr_data["currentValue"]) == 50
+
+
+class TestNoDuplicateSnapshots:
+    """Regression: editing KR without changing metric values must not create
+    duplicate snapshots nor touch last_updated / source."""
+
+    def test_edit_without_value_change_no_snapshot(self, api, default_cycle_id):
+        obj = api.create_objective("E2E NoDup Obj", cycle_id=default_cycle_id)
+        kr = api.create_kr(obj["id"], "E2E NoDup KR", initial=0, current=50, target=100, unit="%")
+
+        history_before = api.get_kr_history(kr["id"])
+        assert len(history_before) == 1
+
+        # Submit the SAME currentValue but change an unrelated field (description).
+        api.update_kr(
+            kr["id"],
+            name="E2E NoDup KR",
+            initialValue=0,
+            currentValue=50,
+            targetValue=100,
+            unit="%",
+            description="updated description",
+            confidence="medium",
+        )
+
+        history_after = api.get_kr_history(kr["id"])
+        assert len(history_after) == 1, (
+            f"Expected no new snapshot, got {len(history_after) - len(history_before)} extra"
+        )
+
+    def test_edit_with_value_change_creates_snapshot(self, api, default_cycle_id):
+        obj = api.create_objective("E2E Dup Obj", cycle_id=default_cycle_id)
+        kr = api.create_kr(obj["id"], "E2E Dup KR", initial=0, current=50, target=100, unit="%")
+
+        history_before = api.get_kr_history(kr["id"])
+        assert len(history_before) == 1
+
+        api.update_kr(kr["id"], currentValue=75)
+
+        history_after = api.get_kr_history(kr["id"])
+        assert len(history_after) == 2, (
+            f"Expected 1 new snapshot, got {len(history_after) - len(history_before)} extra"
+        )
+        assert history_after[-1]["value"] == 75
