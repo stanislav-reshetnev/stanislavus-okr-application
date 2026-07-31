@@ -751,8 +751,7 @@ h1, h2, h3, h4, h5 {
     color: var(--primary-hover);
 }
 
-.fullscreen-btn,
-.collapse-kr-btn {
+.fullscreen-btn {
     position: absolute;
     z-index: 10;
     background: var(--surface);
@@ -767,14 +766,12 @@ h1, h2, h3, h4, h5 {
     display: none;
     box-shadow: var(--shadow-xs);
 }
-.fullscreen-btn:hover,
-.collapse-kr-btn:hover {
+.fullscreen-btn:hover {
     background: var(--surface-hover);
     color: var(--text);
     border-color: var(--border-strong);
 }
 .fullscreen-btn { top: 0.5rem; right: 0.5rem; }
-.collapse-kr-btn { top: 2.5rem; left: 0.5rem; }
 
 .tree-wrapper { position: relative; }
 
@@ -783,6 +780,9 @@ h1, h2, h3, h4, h5 {
     list-style: none;
     padding-left: 1.5rem;
     margin: 0;
+}
+#tree > .tree {
+    padding-left: 0;
 }
 
 .node {
@@ -1556,23 +1556,32 @@ body:not(.edit-mode) .init-name {
 .caret {
     cursor: pointer;
     user-select: none;
-    font-weight: 600;
-    transition: color 0.2s;
     flex-shrink: 0;
-    min-width: 1rem;
-    text-align: center;
-}
-.caret::before {
-    content: "▶";
-    display: inline-block;
-    margin-right: 6px;
-    font-size: 0.6rem;
-    transition: transform 0.2s ease;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s;
     color: var(--text-tertiary);
 }
+.caret:hover {
+    background: var(--surface-hover);
+}
+.caret::before {
+    content: "";
+    display: block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent currentColor;
+    transition: transform 0.2s ease;
+}
 .caret-down::before {
-    content: "▼";
-    transform: rotate(0deg);
+    transform: rotate(90deg);
 }
 
 /* ========== KR Chart ========== */

@@ -23,8 +23,8 @@ const managersBtn = document.getElementById('managersBtn');
 const viewModeGroup = document.getElementById('viewModeGroup');
 const body = document.body;
 const treePanel = document.getElementById('treePanel');
+const expandAllBtn = document.getElementById('expandAllBtn');
 const fullscreenBtn = document.getElementById('fullscreenBtn');
-const collapseKRBtn = document.getElementById('collapseKRBtn');
 const usersBtn = document.getElementById('usersBtn');
 
 let isLoading = false;

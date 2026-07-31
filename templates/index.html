@@ -61,6 +61,7 @@
                 </div>
                 <select id="cycleSwitcher" class="form-select form-select-sm" onchange="onCycleChange(this)"></select>
             </div>
+            <button class="btn btn-outline-secondary btn-sm" id="expandAllBtn" onclick="toggleAllKRs()" style="display:none">Expand all</button>
             <div class="btn-group btn-group-sm" id="viewModeGroup" role="group">
                 <button type="button" class="btn btn-outline-secondary active" data-mode="hierarchy" title="Hierarchical List">🔽 Hierarchy</button>
                 <button type="button" class="btn btn-outline-secondary" data-mode="tree" title="Tree View">🌳 Tree</button>
@@ -89,7 +90,6 @@
                 <div class="zoom-hint" id="zoomHint">Ctrl+Scroll to zoom · Drag to pan</div>
             </div>
             <button class="fullscreen-btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
-            <button class="collapse-kr-btn" id="collapseKRBtn" title="Collapse / Expand Key Results for all objectives" onclick="toggleAllKRs()">⊞</button>
         </div>
     </div>
 

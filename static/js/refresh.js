@@ -114,11 +114,11 @@ async function refreshTree(opts = {}) {
     if (viewMode === 'tree') {
         treePanel.classList.add('tree-mode');
         fullscreenBtn.style.display = 'block';
-        collapseKRBtn.style.display = 'none';
+        expandAllBtn.style.display = 'none';
     } else {
         treePanel.classList.remove('tree-mode');
         fullscreenBtn.style.display = 'none';
-        collapseKRBtn.style.display = 'block';
+        expandAllBtn.style.display = '';
     }
 
     if (viewMode === 'hierarchy') {
