@@ -116,7 +116,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
             btnInit.className = 'btn btn-outline-info btn-sm py-0';
             btnInit.innerHTML = svgIcon('plus') + 'Init';
             btnInit.title = 'Add Initiative';
-            btnInit.onclick = (e) => { e.stopPropagation(); addInitiative(node.id); };
+            btnInit.onclick = (e) => { e.stopPropagation(); addInitiative(node.id, objCode, node.name); };
             nodeDiv.appendChild(btnInit);
         }
 
@@ -246,7 +246,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
                     btnEdit.className = 'btn btn-outline-secondary btn-sm py-0 ms-2 btn-icon';
                     btnEdit.title = 'Edit';
                     btnEdit.innerHTML = svgIcon('pencil');
-                    btnEdit.onclick = () => editInitiative(init.id);
+                    btnEdit.onclick = () => editInitiative(init.id, objCode, node.name);
                     initRow.appendChild(btnEdit);
                     const btnDel = document.createElement('button');
                     btnDel.className = 'btn btn-outline-danger btn-sm py-0 btn-icon';

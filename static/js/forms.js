@@ -533,7 +533,7 @@ async function copyCurlCode(elementId) {
     }
 }
 
-async function addInitiative(objectiveId) {
+async function addInitiative(objectiveId, objCode = '', objName = '') {
     if (!editMode) return;
     document.getElementById('initiativeId').value = '';
     document.getElementById('initiativeObjectiveId').value = objectiveId;
@@ -544,10 +544,12 @@ async function addInitiative(objectiveId) {
     document.getElementById('initiativeStatus').value = 'backlog';
     const snippetEl = document.getElementById('initiativeCurlSnippet');
     if (snippetEl) snippetEl.textContent = '';
+    const subtitle = document.getElementById('initiativeModalSubtitle');
+    if (subtitle) subtitle.textContent = objCode || objName ? `New Initiative · ${objCode} ${objName}`.trim() : '';
     bootstrap.Modal.getOrCreateInstance(document.getElementById('initiativeModal')).show();
 }
 
-async function editInitiative(initiativeId) {
+async function editInitiative(initiativeId, objCode = '', objName = '') {
     if (!editMode) return;
     const tree = await loadTree(selectedTeamId, selectedManagerId, selectedCycleId);
     let found = null;
@@ -576,6 +578,8 @@ async function editInitiative(initiativeId) {
   ${appHost}/api/initiatives/${found.id}`;
     const snippetEl = document.getElementById('initiativeCurlSnippet');
     if (snippetEl) snippetEl.textContent = curl;
+    const subtitle = document.getElementById('initiativeModalSubtitle');
+    if (subtitle) subtitle.textContent = objCode || objName ? `${objCode}${objName ? ' · ' + objName : ''}`.trim() : '';
     bootstrap.Modal.getOrCreateInstance(document.getElementById('initiativeModal')).show();
 }
 
