@@ -422,7 +422,7 @@ function renderHistoryTable(history, krId) {
         const dateStr = !dt || isNaN(dt) ? s.recordedAt : dt.toLocaleString();
         const sourceIcon = s.source === 'api' ? `${svgIcon('robot')} API` : `${svgIcon('pencil')} Manual`;
         tr.innerHTML = `<td>${start + i + 1}</td><td>${s.value}</td><td class="kr-hist-date">${dateStr}</td><td>${sourceIcon}</td>` +
-            `<td><button class="btn btn-outline-danger btn-sm py-0 px-1" onclick="deleteSnapshot('${krId}', '${s.id}')" title="Delete">${svgIcon('trash')}</button></td>`;
+            `<td><button class="btn btn-outline-danger btn-sm py-0 btn-icon" onclick="deleteSnapshot('${krId}', '${s.id}')" title="Delete">${svgIcon('trash')}</button></td>`;
         tbody.appendChild(tr);
     });
 
@@ -645,7 +645,7 @@ async function refreshCycleList() {
                 <div class="text-secondary" style="font-size:0.8rem">${c.startDate} — ${c.endDate}</div>
             </div>
             <div class="btn-group btn-group-sm">
-                <button class="btn btn-outline-info" onclick="editCycle('${c.id}')" title="Edit">${svgIcon('pencil')}</button>
+                <button class="btn btn-outline-info btn-icon" onclick="editCycle('${c.id}')" title="Edit">${svgIcon('pencil')}</button>
                 ${canAdvance ? `<button class="btn btn-outline-primary" onclick="handleUpdateCycleStatus('${c.id}','in_progress')">Start</button>` : ''}
                 ${canComplete ? `<button class="btn btn-outline-success" onclick="handleUpdateCycleStatus('${c.id}','completed')">Complete</button>` : ''}
                 ${c.status === 'in_progress' ? `<button class="btn btn-outline-secondary" onclick="handleUpdateCycleStatus('${c.id}','draft')">Revert</button>` : ''}
