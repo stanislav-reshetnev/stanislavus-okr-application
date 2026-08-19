@@ -34,7 +34,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
         const objNumber = (node.position ?? 0) + 1;
         const objCode = node.parentId ? `O${objNumber}:` : 'O:';
         let nameHtml = '';
-        const handleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
+        const handleHtml = `<span class="drag-handle" draggable="true">${svgIcon('grip')}</span>`;
         const hlName = highlightText(node.name, searchQuery);
         if (node.keyResults && node.keyResults.length) {
             nameHtml += `<span><span class="caret" title="${node.name}"></span>${handleHtml}<span class="objective-label"><span class="objective-number">${objCode}</span> <span class="objective-name" title="${node.name}">${hlName}</span></span></span>`;
@@ -65,7 +65,7 @@ function renderTree(nodes, parentElement, isRoot = false) {
             linkIcon.target = '_blank';
             linkIcon.rel = 'noopener noreferrer';
             linkIcon.className = 'ms-1 text-decoration-none';
-            linkIcon.innerHTML = '🔗';
+            linkIcon.innerHTML = svgIcon('link');
             linkIcon.title = 'Open docs';
             nodeDiv.appendChild(linkIcon);
         }
@@ -73,30 +73,32 @@ function renderTree(nodes, parentElement, isRoot = false) {
         if (node.teamName) {
             const badge = document.createElement('span');
             badge.className = 'badge badge-team';
-            badge.textContent = '👥 ' + node.teamName;
+            badge.innerHTML = svgIcon('people') + ' ' + node.teamName;
             nodeDiv.appendChild(badge);
         }
         if (node.managerName) {
             const badge = document.createElement('span');
             badge.className = 'badge badge-manager';
-            badge.textContent = '👤 ' + node.managerName;
+            badge.innerHTML = svgIcon('person') + ' ' + node.managerName;
             nodeDiv.appendChild(badge);
         }
 
         if (editMode) {
             const btnEdit = document.createElement('button');
-            btnEdit.className = 'btn btn-outline-secondary btn-sm py-0';
-            btnEdit.textContent = '✎';
+            btnEdit.className = 'btn btn-outline-secondary btn-sm py-0 btn-icon';
+            btnEdit.title = 'Edit';
+            btnEdit.innerHTML = svgIcon('pencil');
             btnEdit.onclick = (e) => { e.stopPropagation(); editObjective(node.id); };
             nodeDiv.appendChild(btnEdit);
             const btnDel = document.createElement('button');
-            btnDel.className = 'btn btn-outline-danger btn-sm py-0';
-            btnDel.textContent = '🗑️';
+            btnDel.className = 'btn btn-outline-danger btn-sm py-0 btn-icon';
+            btnDel.title = 'Delete';
+            btnDel.innerHTML = svgIcon('trash');
             btnDel.onclick = (e) => { e.stopPropagation(); deleteObjective(node.id); };
             nodeDiv.appendChild(btnDel);
             const btnObj = document.createElement('button');
             btnObj.className = 'btn btn-outline-warning btn-sm py-0';
-            btnObj.textContent = '+Obj';
+            btnObj.innerHTML = svgIcon('plus') + 'Obj';
             btnObj.title = 'Add Sub-Objective';
             btnObj.onclick = (e) => {
                 e.stopPropagation();
@@ -106,12 +108,13 @@ function renderTree(nodes, parentElement, isRoot = false) {
             nodeDiv.appendChild(btnObj);
             const btnKR = document.createElement('button');
             btnKR.className = 'btn btn-outline-success btn-sm py-0';
-            btnKR.textContent = '+KR';
+            btnKR.innerHTML = svgIcon('plus') + 'KR';
+            btnKR.title = 'Add Key Result';
             btnKR.onclick = (e) => { e.stopPropagation(); addKR(node.id, objCode, node.name); };
             nodeDiv.appendChild(btnKR);
             const btnInit = document.createElement('button');
             btnInit.className = 'btn btn-outline-info btn-sm py-0';
-            btnInit.textContent = '+Init';
+            btnInit.innerHTML = svgIcon('plus') + 'Init';
             btnInit.title = 'Add Initiative';
             btnInit.onclick = (e) => { e.stopPropagation(); addInitiative(node.id); };
             nodeDiv.appendChild(btnInit);
@@ -149,12 +152,12 @@ function renderTree(nodes, parentElement, isRoot = false) {
                     showKRDetail(kr, krNumber);
                 });
 
-                const robotIcon = kr.source === 'api' ? '<span class="ms-1" title="Updated automatically via external API call">🤖</span>' : '';
-                const krHandleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
+                const robotIcon = kr.source === 'api' ? `<span class="ms-1 robot-icon" title="Updated automatically via external API call">${svgIcon('robot')}</span>` : '';
+                const krHandleHtml = `<span class="drag-handle" draggable="true">${svgIcon('grip')}</span>`;
                 const confVal = kr.confidence || 'medium';
                 const confLabel = confVal === 'medium' ? 'Med' : confVal.charAt(0).toUpperCase() + confVal.slice(1);
                 krRow.innerHTML = `
-                    ${krHandleHtml}📊 <span class="kr-label"><strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${highlightText(kr.name, searchQuery)}</strong></span> (${kr.currentValue} / ${kr.targetValue} ${kr.unit})
+                    ${krHandleHtml}${svgIcon('chart')} <span class="kr-label"><strong class="kr-number">${krNumber}:</strong> <strong class="kr-name" title="${kr.name}">${highlightText(kr.name, searchQuery)}</strong></span> (${kr.currentValue} / ${kr.targetValue} ${kr.unit})
                     <div class="progress" title="${progressTitle.replace(/"/g, '&quot;')}"><div class="progress-bar ${pctClass}" style="width:${pct === -1 ? 100 : pct}%">${pct === -1 ? 'N/A' : Math.round(pct) + '%'}</div></div>${robotIcon}<span class="cs cs-${confVal}" title="Confidence Score">${confLabel}</span>`;
 
                 // KR drag handle events
@@ -180,13 +183,15 @@ function renderTree(nodes, parentElement, isRoot = false) {
 
                 if (editMode) {
                     const btnEdit = document.createElement('button');
-                    btnEdit.className = 'btn btn-outline-secondary btn-sm py-0 ms-2';
-                    btnEdit.textContent = '✎';
+                    btnEdit.className = 'btn btn-outline-secondary btn-sm py-0 ms-2 btn-icon';
+                    btnEdit.title = 'Edit';
+                    btnEdit.innerHTML = svgIcon('pencil');
                     btnEdit.onclick = () => editKR(kr.id, krNumber, node.name);
                     krRow.appendChild(btnEdit);
                     const btnDel = document.createElement('button');
-                    btnDel.className = 'btn btn-outline-danger btn-sm py-0';
-                    btnDel.textContent = '🗑️';
+                    btnDel.className = 'btn btn-outline-danger btn-sm py-0 btn-icon';
+                    btnDel.title = 'Delete';
+                    btnDel.innerHTML = svgIcon('trash');
                     btnDel.onclick = () => deleteKR(kr.id);
                     krRow.appendChild(btnDel);
                 }
@@ -206,9 +211,9 @@ function renderTree(nodes, parentElement, isRoot = false) {
 
                 const statusMap = { backlog: 'Backlog', in_progress: 'In Progress', completed: 'Completed', cancelled: 'Cancelled' };
                 const initStatus = init.status || 'backlog';
-                const initHandleHtml = `<span class="drag-handle" draggable="true">⠿</span>`;
+                const initHandleHtml = `<span class="drag-handle" draggable="true">${svgIcon('grip')}</span>`;
                 initRow.innerHTML = `
-                    ${initHandleHtml}📋 <span class="init-label"><strong class="init-number">${initNumber}:</strong> <strong class="init-name" title="${init.name}">${highlightText(init.name, searchQuery)}</strong></span>
+                    ${initHandleHtml}${svgIcon('clipboard')} <span class="init-label"><strong class="init-number">${initNumber}:</strong> <strong class="init-name" title="${init.name}">${highlightText(init.name, searchQuery)}</strong></span>
                     <span class="status status-${initStatus}">${statusMap[initStatus] || initStatus}</span>`;
 
                 initRow.addEventListener('click', (e) => {
@@ -238,13 +243,15 @@ function renderTree(nodes, parentElement, isRoot = false) {
 
                 if (editMode) {
                     const btnEdit = document.createElement('button');
-                    btnEdit.className = 'btn btn-outline-secondary btn-sm py-0 ms-2';
-                    btnEdit.textContent = '✎';
+                    btnEdit.className = 'btn btn-outline-secondary btn-sm py-0 ms-2 btn-icon';
+                    btnEdit.title = 'Edit';
+                    btnEdit.innerHTML = svgIcon('pencil');
                     btnEdit.onclick = () => editInitiative(init.id);
                     initRow.appendChild(btnEdit);
                     const btnDel = document.createElement('button');
-                    btnDel.className = 'btn btn-outline-danger btn-sm py-0';
-                    btnDel.textContent = '🗑️';
+                    btnDel.className = 'btn btn-outline-danger btn-sm py-0 btn-icon';
+                    btnDel.title = 'Delete';
+                    btnDel.innerHTML = svgIcon('trash');
                     btnDel.onclick = () => deleteInitiative(init.id);
                     initRow.appendChild(btnDel);
                 }
@@ -525,12 +532,12 @@ function renderTreeGraphic(nodes, container) {
         const objNumberSpan = `<span class="obj-number">${objCode}</span>`;
         let boxHtml = `<div class="objective-title">${objNumberSpan} ${highlightText(node.name, searchQuery)}`;
         if (node.docLink) {
-            boxHtml += ` <a href="${node.docLink}" target="_blank" rel="noopener noreferrer" class="text-decoration-none" title="Open docs">🔗</a>`;
+            boxHtml += ` <a href="${node.docLink}" target="_blank" rel="noopener noreferrer" class="text-decoration-none" title="Open docs">${svgIcon('link')}</a>`;
         }
         boxHtml += `</div>`;
         const meta = [];
-        if (node.teamName) meta.push(`👥 ${node.teamName}`);
-        if (node.managerName) meta.push(`👤 ${node.managerName}`);
+        if (node.teamName) meta.push(`${svgIcon('people')} ${node.teamName}`);
+        if (node.managerName) meta.push(`${svgIcon('person')} ${node.managerName}`);
         if (meta.length) boxHtml += `<div class="objective-meta">${meta.join(' · ')}</div>`;
         box.innerHTML = boxHtml;
 
@@ -538,14 +545,14 @@ function renderTreeGraphic(nodes, container) {
         if (node.keyResults && node.keyResults.length) {
             node.keyResults.forEach(kr => {
                 const pct = calculateKRProgress(kr);
-                const statusIcon = pct >= 100 ? '✅' : '📊';
+                const statusIcon = pct >= 100 ? `<span class="kr-done-icon">${svgIcon('check')}</span>` : svgIcon('chart');
                 popoverParts.push(`<div class="mb-1">${statusIcon} <strong>${highlightText(kr.name, searchQuery)}</strong>: ${kr.currentValue} → ${kr.targetValue} ${kr.unit} (${Math.round(pct)}%)</div>`);
             });
         }
         if (node.initiatives && node.initiatives.length) {
             popoverParts.push(`<hr class="my-1" style="border-color:#e2e8f0"><div class="mb-1" style="color:#0891b2;font-weight:600;font-size:0.75rem">INITIATIVES</div>`);
             node.initiatives.forEach(init => {
-                popoverParts.push(`<div class="mb-1">📋 <strong>${highlightText(init.name, searchQuery)}</strong></div>`);
+                popoverParts.push(`<div class="mb-1">${svgIcon('clipboard')} <strong>${highlightText(init.name, searchQuery)}</strong></div>`);
             });
         }
         if (popoverParts.length) {

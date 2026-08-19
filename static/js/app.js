@@ -147,8 +147,9 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
     }
 });
 
-async function onCycleChange(sel) {
-    selectedCycleId = sel.value;
+async function onCycleChange(cycleId) {
+    selectedCycleId = cycleId;
+    populateCycleSwitcher(cyclesList, cycleId);
     updateCycleProgress();
     await refreshTree();
 }

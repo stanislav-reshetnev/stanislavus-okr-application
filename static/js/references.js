@@ -4,8 +4,8 @@ async function refreshTeamList() {
         <li class="list-group-item d-flex justify-content-between align-items-center">
             <span id="team-name-${t.id}">${t.name}</span>
             <span>
-                <button class="btn btn-outline-secondary btn-sm py-0 me-1" onclick="editTeam('${t.id}')">✎</button>
-                <button class="btn btn-outline-danger btn-sm py-0" onclick="deleteTeam('${t.id}')">🗑️</button>
+                <button class="btn btn-outline-secondary btn-sm py-0 me-1" onclick="editTeam('${t.id}')" title="Edit">${svgIcon('pencil')}</button>
+                <button class="btn btn-outline-danger btn-sm py-0" onclick="deleteTeam('${t.id}')" title="Delete">${svgIcon('trash')}</button>
             </span>
         </li>`).join('');
 }
@@ -29,8 +29,8 @@ async function refreshManagerList() {
         <li class="list-group-item d-flex justify-content-between align-items-center">
             <span id="manager-name-${m.id}">${m.name}</span>
             <span>
-                <button class="btn btn-outline-secondary btn-sm py-0 me-1" onclick="editManager('${m.id}')">✎</button>
-                <button class="btn btn-outline-danger btn-sm py-0" onclick="deleteManager('${m.id}')">🗑️</button>
+                <button class="btn btn-outline-secondary btn-sm py-0 me-1" onclick="editManager('${m.id}')" title="Edit">${svgIcon('pencil')}</button>
+                <button class="btn btn-outline-danger btn-sm py-0" onclick="deleteManager('${m.id}')" title="Delete">${svgIcon('trash')}</button>
             </span>
         </li>`).join('');
 }

@@ -18,7 +18,7 @@ class TestAddInitiative:
 
         # Click +Init on the objective node
         node = pg.locator(f"li[data-object-id='{obj['id']}']")
-        node.locator("button", has_text="+Init").click()
+        node.locator("button[title='Add Initiative']").click()
 
         # Fill initiative modal
         pg.wait_for_selector("#initiativeName:visible", timeout=5000)

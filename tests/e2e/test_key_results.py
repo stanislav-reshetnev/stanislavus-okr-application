@@ -18,7 +18,7 @@ class TestAddKeyResult:
 
         # Click +KR on the objective node
         node = pg.locator(f"li[data-object-id='{obj['id']}']")
-        node.locator("button", has_text="+KR").click()
+        node.locator("button[title='Add Key Result']").click()
 
         # Fill KR modal
         pg.wait_for_selector("#krName:visible", timeout=5000)

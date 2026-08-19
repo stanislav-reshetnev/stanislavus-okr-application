@@ -53,7 +53,7 @@ class TestUserCRUD:
         # Find user and click edit
         user_li = pg.locator("#userList li", has_text="e2e-edit@test.com")
         user_li.wait_for(state="visible", timeout=5000)
-        user_li.locator("button", has_text="✎").click()
+        user_li.locator("button[title='Edit']").click()
 
         # First prompt: password (leave empty, just click OK)
         # Use type='button' to avoid matching the user form submit (type='submit')

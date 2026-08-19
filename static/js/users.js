@@ -15,9 +15,9 @@ async function refreshUserList() {
                 </small>
             </span>
             <span>
-                <button class="btn btn-outline-info btn-sm py-0 me-1" onclick="regenerateToken('${u.id}')" title="Regenerate API token">🔄</button>
-                <button class="btn btn-outline-secondary btn-sm py-0 me-1" onclick="editUser('${u.id}')">✎</button>
-                <button class="btn btn-outline-danger btn-sm py-0" onclick="deleteUser('${u.id}')">🗑️</button>
+                <button class="btn btn-outline-info btn-sm py-0 me-1" onclick="regenerateToken('${u.id}')" title="Regenerate API token">${svgIcon('repeat')}</button>
+                <button class="btn btn-outline-secondary btn-sm py-0 me-1" onclick="editUser('${u.id}')" title="Edit">${svgIcon('pencil')}</button>
+                <button class="btn btn-outline-danger btn-sm py-0" onclick="deleteUser('${u.id}')" title="Delete">${svgIcon('trash')}</button>
             </span>
         </li>`).join('');
 }

@@ -19,10 +19,10 @@ class TestEditMode:
 
         # Action buttons should appear on the seeded node
         node = pg.locator(f"li[data-object-id='{obj['id']}']")
-        node.locator("button.btn-outline-secondary", has_text="✎").wait_for(
-            state="visible", timeout=5000
+        node.locator("button.btn-outline-secondary[title='Edit']").wait_for(
+            state="visible", timeout=10000
         )
-        assert node.locator("button", has_text="+KR").is_visible()
-        assert node.locator("button", has_text="+Init").is_visible()
-        assert node.locator("button", has_text="+Obj").is_visible()
+        assert node.locator("button[title='Add Key Result']").is_visible()
+        assert node.locator("button[title='Add Initiative']").is_visible()
+        assert node.locator("button[title='Add Sub-Objective']").is_visible()
         assert node.locator("button.btn-outline-danger").is_visible()

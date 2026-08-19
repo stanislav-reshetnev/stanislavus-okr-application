@@ -28,7 +28,7 @@ class TestSubObjective:
 
         # Click +Obj on the parent node
         parent_li = pg.locator(f"li[data-object-id='{parent['id']}']")
-        parent_li.locator("button", has_text="+Obj").click()
+        parent_li.locator("button[title='Add Sub-Objective']").click()
 
         # Modal should open with team/manager pre-selected
         pg.wait_for_selector("#objModal.show", timeout=5000)
