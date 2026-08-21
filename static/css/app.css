@@ -911,6 +911,53 @@ svg.icon {
 }
 .kr-done-icon { color: var(--green-strong); }
 .robot-icon { color: var(--info); }
+
+/* ========== Data Backup modal ========== */
+.backup-action-btn {
+    min-width: 9.5rem;
+    justify-content: center;
+}
+.backup-section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+    margin-bottom: 0.4rem;
+}
+.backup-table-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.35rem 0.6rem;
+}
+.backup-table-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.22rem 0;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+.backup-table-row .form-check-input {
+    margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.backup-table-name {
+    flex-grow: 1;
+    min-width: 0;
+    user-select: none;
+}
+.backup-table-meta {
+    color: var(--text-tertiary);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    user-select: none;
+}
 .empty-state .empty-icon svg { width: 3rem; height: 3rem; color: var(--primary); }
 
 /* ========== Drop Indicators ========== */

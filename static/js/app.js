@@ -179,6 +179,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (currentUser.role === 'admin') {
         document.getElementById('settingsMenuItem').classList.remove('d-none');
         document.getElementById('cyclesMenuItem').classList.remove('d-none');
+        document.getElementById('backupMenuItem').classList.remove('d-none');
     }
 
     const avatarBtn = document.getElementById('profileBtn');
@@ -348,6 +349,108 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (subtitle) subtitle.textContent = '';
     });
 
+    // ── Data Backup ──────────────────────────────────────────────
+    const backupTableList = document.getElementById('backupTableList');
+    if (backupTableList) {
+        // child → parents: export stays restorable via FK-safe cascade
+        const backupDeps = {
+            key_results: ['objectives'],
+            kr_snapshots: ['key_results'],
+            initiatives: ['objectives'],
+            objectives: ['cycles', 'teams', 'managers']
+        };
+        const checkWithDeps = (table) => {
+            const seen = new Set();
+            const stack = [table];
+            while (stack.length) {
+                const t = stack.pop();
+                if (seen.has(t)) continue;
+                seen.add(t);
+                const cb = backupTableList.querySelector(`input[data-table="${t}"]`);
+                if (cb) cb.checked = true;
+                (backupDeps[t] || []).forEach(dep => stack.push(dep));
+            }
+        };
+        backupTableList.addEventListener('change', (e) => {
+            const cb = e.target.closest('input[data-table]');
+            if (cb && cb.checked) checkWithDeps(cb.dataset.table);
+        });
+    }
+
+    const backupSelectAllBtn = document.getElementById('backupSelectAllBtn');
+    if (backupSelectAllBtn) {
+        backupSelectAllBtn.addEventListener('click', () => {
+            backupTableList.querySelectorAll('input[data-table]').forEach(cb => { cb.checked = true; });
+        });
+    }
+
+    const backupExportBtn = document.getElementById('backupExportBtn');
+    if (backupExportBtn) {
+        backupExportBtn.addEventListener('click', async () => {
+            const selected = [...backupTableList.querySelectorAll('input[data-table]:checked')]
+                .map(cb => cb.dataset.table);
+            if (!selected.length) {
+                showToast('Select at least one table to export', 'error');
+                return;
+            }
+            setButtonLoading(backupExportBtn, true);
+            try {
+                const payload = await exportBackup(selected);
+                const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const now = new Date();
+                const pad = n => String(n).padStart(2, '0');
+                a.href = url;
+                a.download = `okr-backup-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('Backup exported.', 'success');
+            } catch (e) {
+                showToast(e.message || 'Backup export failed', 'error');
+            } finally {
+                setButtonLoading(backupExportBtn, false);
+            }
+        });
+    }
+
+    const backupImportFile = document.getElementById('backupImportFile');
+    const backupImportBtn = document.getElementById('backupImportBtn');
+    if (backupImportFile && backupImportBtn) {
+        backupImportFile.addEventListener('change', () => {
+            backupImportBtn.disabled = !backupImportFile.files.length;
+        });
+        backupImportBtn.addEventListener('click', async () => {
+            const file = backupImportFile.files[0];
+            if (!file) return;
+            let payload;
+            try {
+                payload = JSON.parse(await file.text());
+            } catch {
+                showToast('Invalid JSON file', 'error');
+                return;
+            }
+            if (!payload || payload.version !== 1 || !payload.data || typeof payload.data !== 'object') {
+                showToast('Not a valid backup file', 'error');
+                return;
+            }
+            const tableNames = Object.keys(payload.data);
+            const ok = await showConfirmModal(
+                `Replace data with this backup (${tableNames.length} table(s))? This cannot be undone.`
+            );
+            if (!ok) return;
+            setButtonLoading(backupImportBtn, true);
+            try {
+                await importBackup(payload);
+                showToast('Backup imported. Reloading…', 'success');
+                setTimeout(() => location.reload(), 800);
+            } catch (e) {
+                showToast(e.message || 'Backup import failed', 'error');
+                setButtonLoading(backupImportBtn, false);
+            }
+        });
+    }
+
     try {
         const settings = await loadSettings();
         if (settings.kr_chart_interval) {
@@ -367,7 +470,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Enable drag & resize for major modals (skip transient confirm/prompt)
     ['objModal', 'krModal', 'initiativeModal', 'settingsModal', 'cyclesModal',
      'teamModal', 'managerModal', 'userModal', 'profileModal',
-     'krDetailModal', 'initiativeDetailModal'].forEach(id => {
+     'krDetailModal', 'initiativeDetailModal', 'backupModal'].forEach(id => {
         const el = document.getElementById(id);
         if (el) initModalDragResize(el);
     });

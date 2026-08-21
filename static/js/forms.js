@@ -623,6 +623,53 @@ async function showCyclesModal() {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('cyclesModal')).show();
 }
 
+const BACKUP_TABLE_LABELS = {
+    users: 'Users',
+    teams: 'Teams',
+    managers: 'Managers',
+    cycles: 'Cycles',
+    objectives: 'Objectives',
+    key_results: 'Key Results',
+    kr_snapshots: 'KR Snapshots',
+    initiatives: 'Initiatives',
+    settings: 'Settings'
+};
+
+function formatBackupSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+async function showBackupModal() {
+    const container = document.getElementById('backupTableList');
+    if (!container) return;
+    container.innerHTML = '<div class="text-secondary" style="font-size:0.85rem">Loading…</div>';
+    const importBtn = document.getElementById('backupImportBtn');
+    if (importBtn) importBtn.disabled = true;
+    const fileInput = document.getElementById('backupImportFile');
+    if (fileInput) fileInput.value = '';
+    try {
+        const stats = await loadBackupStats();
+        container.innerHTML = '';
+        stats.tables.forEach(t => {
+            const row = document.createElement('label');
+            row.className = 'backup-table-row';
+            const label = BACKUP_TABLE_LABELS[t.name] || t.name;
+            row.innerHTML = `<input type="checkbox" class="form-check-input" data-table="${t.name}" checked>` +
+                `<span class="backup-table-name">${label}</span>` +
+                `<span class="backup-table-meta">${t.count} records · ${formatBackupSize(t.sizeBytes)}</span>`;
+            container.appendChild(row);
+        });
+    } catch (e) {
+        console.error('Backup stats error:', e);
+        container.innerHTML = '<div class="text-secondary" style="font-size:0.85rem">Failed to load table stats</div>';
+        showToast('Failed to load backup stats', 'error');
+        return;
+    }
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('backupModal')).show();
+}
+
 async function refreshCycleList() {
     const cycles = await loadCycles();
     const list = document.getElementById('cycleList');

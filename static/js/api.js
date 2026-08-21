@@ -100,3 +100,35 @@ async function loadKRHistory(krId) {
     if (!resp.ok) return [];
     return await resp.json();
 }
+
+async function loadBackupStats() {
+    const resp = await fetch('/api/backup/stats');
+    if (!resp.ok) throw new Error('Backup stats load error');
+    return await resp.json();
+}
+
+async function exportBackup(tables) {
+    const resp = await fetch('/api/backup/export', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({tables})
+    });
+    if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'Backup export error');
+    }
+    return await resp.json();
+}
+
+async function importBackup(payload) {
+    const resp = await fetch('/api/backup/import', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    });
+    if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'Backup import error');
+    }
+    return await resp.json();
+}
