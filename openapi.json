@@ -2570,7 +2570,7 @@
           "description": {
             "type": "string",
             "description": "Internal notes about metric calculation logic",
-            "maxLength": 1000
+            "maxLength": 10000
           },
           "position": {
             "type": "integer",
@@ -2825,7 +2825,7 @@
             "type": "string",
             "default": "",
             "description": "Internal notes about metric calculation logic",
-            "maxLength": 1000
+            "maxLength": 10000
           },
           "confidence": {
             "type": "string",
@@ -2884,7 +2884,7 @@
           "description": {
             "type": "string",
             "description": "Internal notes about metric calculation logic",
-            "maxLength": 1000
+            "maxLength": 10000
           },
           "position": {
             "type": "integer",

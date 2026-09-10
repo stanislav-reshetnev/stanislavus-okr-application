@@ -44,10 +44,18 @@ document.getElementById('initiativeForm').addEventListener('submit', async (e) =
             status: document.getElementById('initiativeStatus').value || 'backlog'
         };
         if (id) {
-            await fetch(`/api/initiatives/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            const resp = await fetch(`/api/initiatives/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            if (!resp.ok) {
+                await showApiError(resp, 'Failed to save initiative');
+                return;
+            }
         } else {
             const objId = document.getElementById('initiativeObjectiveId').value;
-            await fetch(`/api/objectives/${objId}/initiatives`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            const resp = await fetch(`/api/objectives/${objId}/initiatives`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            if (!resp.ok) {
+                await showApiError(resp, 'Failed to save initiative');
+                return;
+            }
         }
         bootstrap.Modal.getInstance(document.getElementById('initiativeModal')).hide();
         refreshTree({ ensureExpanded: document.getElementById('initiativeObjectiveId').value });
@@ -73,12 +81,20 @@ document.getElementById('krForm').addEventListener('submit', async (e) => {
             confidence: document.getElementById('krConfidence').value || 'medium'
         };
         if (id) {
-            await fetch(`/api/keyresults/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            const resp = await fetch(`/api/keyresults/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            if (!resp.ok) {
+                await showApiError(resp, 'Failed to save KR');
+                return;
+            }
             refreshTree({ ensureExpanded: document.getElementById('krObjectiveId').value });
             showToast('Saved', 'success');
         } else {
             const objId = document.getElementById('krObjectiveId').value;
-            await fetch(`/api/objectives/${objId}/keyresults`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            const resp = await fetch(`/api/objectives/${objId}/keyresults`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            if (!resp.ok) {
+                await showApiError(resp, 'Failed to save KR');
+                return;
+            }
             bootstrap.Modal.getInstance(document.getElementById('krModal')).hide();
             refreshTree({ ensureExpanded: objId });
         }

@@ -65,6 +65,13 @@ function svgIcon(name, size = 12) {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 16 16" fill="currentColor" class="icon" aria-hidden="true">${ICON_PATHS[name] || ''}</svg>`;
 }
 
+async function showApiError(resp, fallback) {
+    const err = await resp.json().catch(() => ({}));
+    let msg = err.detail || err.error || `${fallback} (${resp.status})`;
+    if (msg.length > 300) msg = msg.slice(0, 300) + '…';
+    showToast(msg, 'error');
+}
+
 function showToast(message, type = 'info', duration = 3000) {
     const container = document.getElementById('toastContainer');
     if (!container) return;
