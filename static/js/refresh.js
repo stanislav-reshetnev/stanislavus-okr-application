@@ -64,6 +64,9 @@ async function reorderInitiatives(items) {
 
 async function refreshTree(opts = {}) {
     const { skipSkeleton, ensureExpanded } = opts;
+    const refreshId = (window._treeRefreshId || 0) + 1;
+    window._treeRefreshId = refreshId;
+    const queryAtStart = searchQuery;
     const treeContainer = document.getElementById('tree');
     const skeleton = document.getElementById('loadingSkeleton');
     const emptyState = document.getElementById('emptyState');
@@ -86,8 +89,12 @@ async function refreshTree(opts = {}) {
     }
 
     const data = await loadTree(selectedTeamId, selectedManagerId, selectedCycleId);
-    if (searchQuery) {
-        const q = searchQuery.toLowerCase();
+    // Search input can trigger multiple overlapping requests. Do not let an
+    // older response overwrite the result of the latest query.
+    if (refreshId !== window._treeRefreshId) return;
+
+    if (queryAtStart) {
+        const q = queryAtStart.toLowerCase();
         (function walk(nodes) {
             for (const node of nodes) {
                 const nameMatch = node.name.toLowerCase().includes(q);
@@ -98,14 +105,37 @@ async function refreshTree(opts = {}) {
             }
         })(data);
     }
-    const filtered = data;
+    const filtered = queryAtStart ? filterTreeBySearch(data, queryAtStart) : data;
 
     if (!skipSkeleton) {
         if (skeleton) skeleton.style.display = 'none';
         if (!filtered.length) {
-            if (emptyState) emptyState.style.display = '';
+            if (emptyState) {
+                emptyState.style.display = '';
+                const title = emptyState.querySelector('.empty-title');
+                const desc = emptyState.querySelector('.empty-desc');
+                const createButton = emptyState.querySelector('button');
+                if (queryAtStart) {
+                    if (title) title.textContent = 'No results found';
+                    if (desc) desc.textContent = `Nothing matches “${queryAtStart}”.`;
+                    if (createButton) createButton.style.display = 'none';
+                } else {
+                    if (title) title.textContent = 'No objectives yet';
+                    if (desc) desc.textContent = 'Create your first objective to get started.';
+                    if (createButton) createButton.style.display = '';
+                }
+            }
             treeContainer.style.display = 'none';
         } else {
+            if (emptyState) {
+                emptyState.style.display = 'none';
+                const title = emptyState.querySelector('.empty-title');
+                const desc = emptyState.querySelector('.empty-desc');
+                const createButton = emptyState.querySelector('button');
+                if (title) title.textContent = 'No objectives yet';
+                if (desc) desc.textContent = 'Create your first objective to get started.';
+                if (createButton) createButton.style.display = '';
+            }
             treeContainer.style.display = '';
         }
     }
@@ -155,6 +185,21 @@ async function refreshTree(opts = {}) {
         treeContainer.innerHTML = '';
         renderTreeGraphic(filtered, treeContainer);
     }
+}
+
+function filterTreeBySearch(nodes, query) {
+    const q = query.toLowerCase();
+    return nodes.reduce((matches, node) => {
+        const children = filterTreeBySearch(node.children || [], query);
+        const objectiveMatches = node.name.toLowerCase().includes(q);
+        const keyResultMatches = (node.keyResults || []).some(kr => kr.name.toLowerCase().includes(q));
+        const initiativeMatches = (node.initiatives || []).some(i => i.name.toLowerCase().includes(q));
+
+        if (objectiveMatches || keyResultMatches || initiativeMatches || children.length) {
+            matches.push({ ...node, children });
+        }
+        return matches;
+    }, []);
 }
 
 function initSearch() {

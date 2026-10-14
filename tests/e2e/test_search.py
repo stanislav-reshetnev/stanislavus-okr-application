@@ -1,8 +1,8 @@
-"""E2E test: search highlights matching text in the tree."""
+"""E2E tests for search filtering and highlighting."""
 
 
 class TestSearchHighlight:
-    """Scenario: search input highlights matching text without hiding nodes."""
+    """Scenario: search input filters the tree and highlights matches."""
 
     def test_search_highlights_text(self, app_page, api, default_cycle_id):
         obj = api.create_objective(
@@ -31,10 +31,19 @@ class TestSearchHighlight:
         highlight = pg.locator("mark.search-highlight", has_text="SearchTarget")
         assert highlight.count() >= 1
 
-        # Extra: non-matching objective should still be visible (not hidden)
+        # The search result remains visible.
         pg.locator(".objective-name", has_text="E2E SearchTarget Unique").wait_for(
             state="visible", timeout=5000
         )
+
+        # A query with no matches must not fall back to rendering the whole tree.
+        pg.fill("#searchInput", "definitely-no-such-okr-aaaa")
+        pg.wait_for_timeout(500)
+        pg.locator(".empty-title", has_text="No results found").wait_for(
+            state="visible", timeout=5000
+        )
+        assert pg.locator(".node").count() == 0
+        assert pg.locator(".empty-desc", has_text="definitely-no-such-okr-aaaa").count() == 1
 
         # Clear search
         pg.fill("#searchInput", "")
@@ -42,3 +51,4 @@ class TestSearchHighlight:
 
         # Highlights should disappear
         assert pg.locator("mark.search-highlight").count() == 0
+        assert pg.locator(".empty-title", has_text="No results found").count() == 0
