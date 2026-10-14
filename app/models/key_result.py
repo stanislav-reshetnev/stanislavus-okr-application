@@ -157,5 +157,29 @@ def reorder(db, items):
 
 
 def delete(db, kr_id):
+    row = db.execute(
+        'SELECT objective_id FROM key_results WHERE id = ?', (kr_id,)
+    ).fetchone()
+    if not row:
+        return False
+
+    objective_id = row['objective_id']
     db.execute('DELETE FROM key_results WHERE id = ?', (kr_id,))
+
+    # KR labels are derived from the zero-based position (KR1, KR2, ...).
+    # Rebuild the complete sibling sequence instead of only decrementing
+    # positions after the deleted item; this also repairs any pre-existing
+    # gaps or duplicate positions caused by older reorder operations.
+    remaining = db.execute(
+        'SELECT id FROM key_results '
+        'WHERE objective_id = ? ORDER BY position, id',
+        (objective_id,)
+    ).fetchall()
+    for position, sibling in enumerate(remaining):
+        db.execute(
+            'UPDATE key_results SET position = ? WHERE id = ?',
+            (position, sibling['id'])
+        )
+
     db.commit()
+    return True

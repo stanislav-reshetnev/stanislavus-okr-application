@@ -39,7 +39,8 @@ def updateKeyResult(keyResultId, body):
 @role_required('edit', 'admin')
 def deleteKeyResult(keyResultId):
     db = get_db()
-    kr_model.delete(db, keyResultId)
+    if not kr_model.delete(db, keyResultId):
+        return {'error': 'key result not found'}, 404
     return {'status': 'deleted'}
 
 
