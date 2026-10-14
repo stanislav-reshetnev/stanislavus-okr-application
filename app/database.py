@@ -21,6 +21,20 @@ def close_db(exception=None):
         db.close()
 
 
+def current_quarter_dates(now):
+    """Return the current quarter number and its inclusive date range."""
+    quarter = (now.month - 1) // 3 + 1
+    start_month = 3 * quarter - 2
+    start = datetime(now.year, start_month, 1)
+
+    if quarter == 4:
+        next_start = datetime(now.year + 1, 1, 1)
+    else:
+        next_start = datetime(now.year, start_month + 3, 1)
+
+    return quarter, start, next_start - timedelta(days=1)
+
+
 def init_db(app):
     with app.app_context():
         db = get_db()
@@ -176,9 +190,7 @@ def init_db(app):
         if existing == 0:
             import uuid
             now = datetime.now(timezone.utc)
-            q = (now.month - 1) // 3 + 1
-            q_start = datetime(now.year, 3 * q - 2, 1)
-            q_end = datetime(now.year, 3 * q + 1, 1) - timedelta(days=1)
+            q, q_start, q_end = current_quarter_dates(now)
             cycle_id = str(uuid.uuid4())
             cycle_name = f'Q{q} {now.year}'
             db.execute(
